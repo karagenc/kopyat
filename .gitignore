@@ -1,0 +1,9 @@
+.vscode
+*.exe
+/kopyaship
+/kopyaship-*
+/kopyashipd
+/kopyashipd-*
+/kopyashipd.lock
+/kopyaship.yml
+/tmp

@@ -1,0 +1,51 @@
+daemon:
+  log: /var/log/kopyaship.log
+  notification:
+    enabled: true
+
+env:
+  HOSTNAME: foobar
+
+scripts:
+  location: $HOME/kopyaship-scripts
+
+ifile_generation:
+  hooks:
+    pre:
+    post:
+  run:
+    - scan_path: /path/to/st-dir
+      recursive: true
+      ifile: /path/to/st-dir/.stignore
+      hooks:
+        pre:
+        post:
+
+backups:
+  hooks:
+    pre:
+    post:
+  reminders:
+    pre:
+    post:
+  run:
+    - name: photos
+      restic:
+        repo: /path/to/photos-repo
+        mount_location: /path/to/mnt
+        extra_args: "-H $HOSTNAME"
+        #password:
+      filter:
+        #if_os_is: 
+      warn:
+        size: 5G
+      ifile_generation: true
+      hooks:
+        pre:
+        post:
+      reminders:
+        pre:
+        post:
+      base: 
+      paths:
+        - 
