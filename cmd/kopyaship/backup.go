@@ -25,11 +25,22 @@ var backupCmd = &cobra.Command{
 			postHookFail = false
 		)
 
+		backups, err := backup.FromConfig(config, cacheDir, true)
+		if err != nil {
+			exit(err)
+		}
+
 		if !noRemind {
-			remindAll(v.GetStringSlice("backups.reminders.pre"))
+			remindAll(config.Backups.Reminders.Pre)
 		}
 		if !noHook {
-			hooks := v.GetStringSlice("backups.hooks.pre")
+			hooks := config.Backups.Hooks.Pre
+			for _, backup := range config.Backups.Run {
+				_, ok := backups[backup.Name]
+				if ok {
+					hooks = append(hooks, backup.Hooks.Pre...)
+				}
+			}
 			for i, hook := range hooks {
 				fmt.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
 				err := runHook(hook)
@@ -37,12 +48,9 @@ var backupCmd = &cobra.Command{
 					exit(fmt.Errorf("pre hook failed: %v: exiting.", err))
 				}
 			}
+
 		}
 
-		backups, err := backup.FromConfig(config, cacheDir, true)
-		if err != nil {
-			exit(err)
-		}
 		for _, backup := range backups {
 			err = backup.Do()
 			if err != nil {
@@ -51,10 +59,16 @@ var backupCmd = &cobra.Command{
 		}
 
 		if !noRemind {
-			remindAll(v.GetStringSlice("backups.reminders.post"))
+			remindAll(config.Backups.Reminders.Post)
 		}
 		if !noHook {
-			hooks := v.GetStringSlice("backups.hooks.post")
+			hooks := config.Backups.Hooks.Post
+			for _, backup := range config.Backups.Run {
+				_, ok := backups[backup.Name]
+				if ok {
+					hooks = append(hooks, backup.Hooks.Post...)
+				}
+			}
 			for i, hook := range hooks {
 				fmt.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
 				err := runHook(hook)

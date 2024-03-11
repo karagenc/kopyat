@@ -32,7 +32,6 @@ backups:
     - name: photos
       restic:
         repo: /path/to/photos-repo
-        mount_location: /path/to/mnt
         extra_args: "-H $HOSTNAME"
         #password:
       filter:

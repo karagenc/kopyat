@@ -2,28 +2,21 @@ package config
 
 type (
 	Backups struct {
-		Hooks     BackupHooks     `mapstructure:"hooks"`
-		Reminders BackupReminders `mapstructure:"hooks"`
-		Run       []*Backup       `mapstructure:"run"`
-	}
-
-	BackupHooks struct {
-		Pre  []string `mapstructure:"pre"`
-		Post []string `mapstructure:"post"`
-	}
-
-	BackupReminders struct {
-		Pre  []string `mapstructure:"pre"`
-		Post []string `mapstructure:"post"`
+		Hooks     Hooks     `mapstructure:"hooks"`
+		Reminders Reminders `mapstructure:"hooks"`
+		Run       []*Backup `mapstructure:"run"`
 	}
 
 	Backup struct {
 		Name   string  `mapstructure:"name"`
 		Restic *Restic `mapstructure:"restic"`
-		Ignore bool    `mapstructure:"ignore"`
 
-		Filter BackupFilter `mapstructure:"filter"`
-		Warn   BackupWarn   `mapstructure:"warn"`
+		Filter          BackupFilter `mapstructure:"filter"`
+		Warn            BackupWarn   `mapstructure:"warn"`
+		IfileGeneration bool         `mapstructure:"ifile_generation"`
+
+		Hooks     Hooks     `mapstructure:"hooks"`
+		Reminders Reminders `mapstructure:"reminders"`
 
 		Base  string   `mapstructure:"base"`
 		Paths []string `mapstructure:"paths"`

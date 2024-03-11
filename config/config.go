@@ -10,9 +10,48 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Config struct {
-	Backups Backups `mapstructure:"backups"`
-}
+type (
+	Config struct {
+		Daemon  Daemon            `mapstructure:"daemon"`
+		Env     map[string]string `mapstructure:"env"`
+		Scripts Scripts           `mapstructure:"scripts"`
+		IfileGeneration
+		Backups Backups `mapstructure:"backups"`
+	}
+
+	IfileGeneration struct {
+		Hooks Hooks                 `mapstructure:"hooks"`
+		Run   []*IfileGenerationRun `mapstructure:"run"`
+	}
+
+	IfileGenerationRun struct {
+		ScanPath  string `mapstructure:"scan_path"`
+		Recursive bool   `mapstructure:"recursive"`
+		Ifile     string `mapstructure:"ifile"`
+		Hooks     Hooks  `mapstructure:"hooks"`
+	}
+
+	Daemon struct {
+		Log          string `mapstructure:"log"`
+		Notification struct {
+			Enabled bool `mapstructure:"enabled"`
+		} `mapstructure:"notification"`
+	}
+
+	Scripts struct {
+		Location string `mapstructure:"location"`
+	}
+
+	Hooks struct {
+		Pre  []string `mapstructure:"pre"`
+		Post []string `mapstructure:"post"`
+	}
+
+	Reminders struct {
+		Pre  []string `mapstructure:"pre"`
+		Post []string `mapstructure:"post"`
+	}
+)
 
 func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, err error) {
 	v = viper.New()
