@@ -26,14 +26,14 @@ type (
 	}
 )
 
-func FromConfig(config *config.Config, cacheDir string) (backups Backups, err error) {
+func FromConfig(config *config.Config, cacheDir string, printCommand bool) (backups Backups, err error) {
 	backups = make(Backups)
 
 	for _, backupConfig := range config.Backups.Run {
 		if strings.TrimSpace(backupConfig.Name) == "" {
 			return nil, fmt.Errorf("no name given to the backup configuration")
 		}
-		backup, skip, err := fromConfig(backupConfig, cacheDir)
+		backup, skip, err := fromConfig(backupConfig, cacheDir, printCommand)
 		if skip {
 			continue
 		}
@@ -45,10 +45,10 @@ func FromConfig(config *config.Config, cacheDir string) (backups Backups, err er
 	return
 }
 
-func fromConfig(backupConfig *config.Backup, cacheDir string) (backup *Backup, skip bool, err error) {
+func fromConfig(backupConfig *config.Backup, cacheDir string, printCommand bool) (backup *Backup, skip bool, err error) {
 	backup = &Backup{
 		Name:     backupConfig.Name,
-		Provider: provider.NewRestic(backupConfig.Restic.Repo, backupConfig.Restic.ExtraArgs),
+		Provider: provider.NewRestic(backupConfig.Restic.Repo, backupConfig.Restic.ExtraArgs, printCommand),
 		IfOSIs:   backupConfig.Filter.IfOSIs,
 	}
 

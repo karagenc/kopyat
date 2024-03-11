@@ -9,16 +9,18 @@ import (
 )
 
 type Restic struct {
-	repoPath  string
-	extraArgs string
-	sudo      bool
+	repoPath     string
+	extraArgs    string
+	sudo         bool
+	printCommand bool
 }
 
-func NewRestic(repoPath string, extraArgs string) *Restic {
+func NewRestic(repoPath string, extraArgs string, printCommand bool) *Restic {
 	return &Restic{
-		repoPath:  repoPath,
-		extraArgs: extraArgs,
-		sudo:      false,
+		repoPath:     repoPath,
+		extraArgs:    extraArgs,
+		sudo:         false,
+		printCommand: printCommand,
 	}
 }
 
@@ -52,6 +54,9 @@ func (r *Restic) run(command string) error {
 
 	if r.sudo {
 		command = "sudo " + command
+	}
+	if r.printCommand {
+		fmt.Printf("Running: %s\n", command)
 	}
 
 	w, err := parser.Parse(command)

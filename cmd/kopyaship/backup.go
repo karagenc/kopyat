@@ -39,7 +39,7 @@ var backupCmd = &cobra.Command{
 			}
 		}
 
-		backups, err := backup.FromConfig(config, cacheDir)
+		backups, err := backup.FromConfig(config, cacheDir, true)
 		if err != nil {
 			exit(err)
 		}

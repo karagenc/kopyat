@@ -11,7 +11,7 @@ import (
 var initCmd = &cobra.Command{
 	Use: "init",
 	Run: func(cmd *cobra.Command, args []string) {
-		backups, err := backup.FromConfig(config, cacheDir)
+		backups, err := backup.FromConfig(config, cacheDir, true)
 		if err != nil {
 			exit(err)
 		}
