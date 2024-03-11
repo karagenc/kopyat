@@ -8,11 +8,11 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func (p *Paths) ifilePath() string {
+func (p *paths) ifilePath() string {
 	return filepath.Join(p.cacheDir, p.backup.Name+".list")
 }
 
-func (p *Paths) generateIfile() error {
+func (p *paths) generateIfile() error {
 	g, _ := errgroup.WithContext(context.Background())
 
 	i, err := ifile.New(p.ifilePath())
@@ -21,7 +21,7 @@ func (p *Paths) generateIfile() error {
 	}
 	defer i.Close()
 
-	for _, path := range p.Paths {
+	for _, path := range p.paths {
 		path := path
 		g.Go(func() error {
 			return i.Walk(path)

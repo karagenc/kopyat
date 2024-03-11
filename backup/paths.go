@@ -7,44 +7,46 @@ import (
 	"strings"
 )
 
-type Paths struct {
+type paths struct {
 	backup *Backup
 	// Not to be confused with Base:
 	// This is kopyaship's base directory.
 	cacheDir string
 
-	Base  string
-	Paths []string
+	base  string
+	paths []string
 }
 
-func (p *Paths) check() error {
-	if p.Base != "" {
-		p.Base = strings.TrimSuffix(p.Base, "/")
-		p.Base = os.ExpandEnv(p.Base)
-		if !filepath.IsAbs(p.Base) {
+func (p *paths) Paths() []string { return p.paths }
+
+func (p *paths) check() error {
+	if p.base != "" {
+		p.base = strings.TrimSuffix(p.base, "/")
+		p.base = os.ExpandEnv(p.base)
+		if !filepath.IsAbs(p.base) {
 			return fmt.Errorf("backup path is not absolute")
 		}
-		if _, err := os.Stat(p.Base); os.IsNotExist(err) {
+		if _, err := os.Stat(p.base); os.IsNotExist(err) {
 			return err
 		}
 	}
 
-	for i, path := range p.Paths {
+	for i, path := range p.paths {
 		if path == "" {
 			return fmt.Errorf("one of the paths is empty")
 		}
 
 		path = strings.TrimSuffix(path, "/")
 		path = os.ExpandEnv(path)
-		path = filepath.Join(p.Base, path)
+		path = filepath.Join(p.base, path)
 
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			return err
 		}
-		p.Paths[i] = path
+		p.paths[i] = path
 	}
 
-	return checkPathCollision(p.Paths)
+	return checkPathCollision(p.paths)
 }
 
 func checkPathCollision(paths []string) error {

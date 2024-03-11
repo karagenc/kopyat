@@ -9,18 +9,20 @@ import (
 )
 
 type Restic struct {
-	repoPath     string
-	extraArgs    string
-	sudo         bool
-	printCommand bool
+	repoPath  string
+	extraArgs string
+	sudo      bool
+	shell     bool
+	password  string
 }
 
-func NewRestic(repoPath string, extraArgs string, printCommand bool) *Restic {
+func NewRestic(repoPath, extraArgs, password string, shell bool) *Restic {
 	return &Restic{
-		repoPath:     repoPath,
-		extraArgs:    extraArgs,
-		sudo:         false,
-		printCommand: printCommand,
+		repoPath:  repoPath,
+		extraArgs: extraArgs,
+		sudo:      false,
+		shell:     shell,
+		password:  password,
 	}
 }
 
@@ -47,6 +49,10 @@ func (r *Restic) BackupWithIfile(ifile string) error {
 	return r.run(fmt.Sprintf("%s --files-from %s", command, ifile))
 }
 
+func (r *Restic) PasswordIsSet() bool {
+	return r.password != "" || os.Getenv("RESTIC_PASSWORD") != ""
+}
+
 func (r *Restic) run(command string) error {
 	parser := shellwords.NewParser()
 	parser.ParseBacktick = true
@@ -55,8 +61,12 @@ func (r *Restic) run(command string) error {
 	if r.sudo {
 		command = "sudo " + command
 	}
-	if r.printCommand {
+	if r.shell {
 		fmt.Printf("Running: %s\n", command)
+	}
+	if r.password != "" {
+		os.Setenv("RESTIC_PASSWORD", r.password)
+		defer os.Unsetenv("RESTIC_PASSWORD")
 	}
 
 	w, err := parser.Parse(command)

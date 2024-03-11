@@ -5,4 +5,5 @@ type Provider interface {
 	TargetLocation() string
 	Backup(path string) error
 	BackupWithIfile(ifile string) error
+	PasswordIsSet() bool
 }
