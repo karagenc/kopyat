@@ -31,7 +31,14 @@ var backupCmd = &cobra.Command{
 		}
 
 		if !noRemind {
-			remindAll(config.Backups.Reminders.Pre)
+			reminders := config.Backups.Reminders.Pre
+			for _, backup := range config.Backups.Run {
+				_, ok := backups[backup.Name]
+				if ok {
+					reminders = append(reminders, backup.Reminders.Pre...)
+				}
+			}
+			remindAll(reminders)
 		}
 		if !noHook {
 			hooks := config.Backups.Hooks.Pre
@@ -59,7 +66,14 @@ var backupCmd = &cobra.Command{
 		}
 
 		if !noRemind {
-			remindAll(config.Backups.Reminders.Post)
+			reminders := config.Backups.Reminders.Post
+			for _, backup := range config.Backups.Run {
+				_, ok := backups[backup.Name]
+				if ok {
+					reminders = append(reminders, backup.Reminders.Post...)
+				}
+			}
+			remindAll(reminders)
 		}
 		if !noHook {
 			hooks := config.Backups.Hooks.Post
