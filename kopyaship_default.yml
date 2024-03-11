@@ -32,6 +32,7 @@ backups:
     - name: photos
       restic:
         repo: /path/to/photos-repo
+        sudo: false
         extra_args: "-H $HOSTNAME"
         #password:
       filter:

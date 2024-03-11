@@ -53,7 +53,7 @@ func FromConfig(config *config.Config, cacheDir string, shell bool) (backups Bac
 func fromConfig(backupConfig *config.Backup, cacheDir string, shell bool) (backup *Backup, skip bool, err error) {
 	backup = &Backup{
 		Name:          backupConfig.Name,
-		Provider:      provider.NewRestic(backupConfig.Restic.Repo, backupConfig.Restic.ExtraArgs, backupConfig.Restic.Password, shell),
+		Provider:      provider.NewRestic(backupConfig.Restic.Repo, backupConfig.Restic.ExtraArgs, backupConfig.Restic.Password, backupConfig.Restic.Sudo, shell),
 		GenerateIfile: backupConfig.IfileGeneration,
 		IfOSIs:        backupConfig.Filter.IfOSIs,
 		shell:         shell,

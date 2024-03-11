@@ -16,11 +16,11 @@ type Restic struct {
 	password  string
 }
 
-func NewRestic(repoPath, extraArgs, password string, shell bool) *Restic {
+func NewRestic(repoPath, extraArgs, password string, sudo, shell bool) *Restic {
 	return &Restic{
 		repoPath:  repoPath,
 		extraArgs: extraArgs,
-		sudo:      false,
+		sudo:      sudo,
 		shell:     shell,
 		password:  password,
 	}
