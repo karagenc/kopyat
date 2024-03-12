@@ -21,7 +21,7 @@ func (p *paths) generateIfile() error {
 	}
 	defer i.Close()
 
-	for _, path := range p.paths {
+	for _, path := range p.Paths() {
 		path := path
 		g.Go(func() error {
 			return i.Walk(path)

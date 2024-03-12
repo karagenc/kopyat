@@ -21,11 +21,11 @@ func (p *paths) Paths() []string { return p.paths }
 
 func (p *paths) check() error {
 	if p.base != "" {
+		if !filepath.IsAbs(p.base) {
+			return fmt.Errorf("backup base path `%s` is not absolute. to avoid confusion, backup base path must be absolute.", p.base)
+		}
 		p.base = strings.TrimSuffix(p.base, "/")
 		p.base = os.ExpandEnv(p.base)
-		if !filepath.IsAbs(p.base) {
-			return fmt.Errorf("backup path is not absolute")
-		}
 		if _, err := os.Stat(p.base); os.IsNotExist(err) {
 			return err
 		}
@@ -33,9 +33,11 @@ func (p *paths) check() error {
 
 	for i, path := range p.paths {
 		if path == "" {
-			return fmt.Errorf("one of the paths is empty")
+			return fmt.Errorf("one of the backup paths is empty")
 		}
-
+		if !filepath.IsAbs(path) {
+			return fmt.Errorf("backup path `%s` is not absolute. to avoid confusion, either backup base path or the paths must be absolute.", path)
+		}
 		path = strings.TrimSuffix(path, "/")
 		path = os.ExpandEnv(path)
 		path = filepath.Join(p.base, path)
