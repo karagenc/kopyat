@@ -41,7 +41,10 @@ func initConfig() (systemWide bool) {
 	if err != nil {
 		exit(err)
 	}
-	os.Chdir(filepath.Dir(v.ConfigFileUsed()))
+	err = os.Chdir(filepath.Dir(v.ConfigFileUsed()))
+	if err != nil {
+		exit(err)
+	}
 	return
 }
 
