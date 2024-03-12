@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"syscall"
 
 	pathspec "github.com/shibumi/go-pathspec"
@@ -16,9 +15,7 @@ const (
 	csignore  = ".csignore"
 )
 
-func (i *Ifile) Walk(path string) error { return walk(i.file, &i.fileMu, path, true) }
-
-func walk(file *os.File, fileMu *sync.Mutex, root string, isIncludeFile bool) error {
+func (i *Ifile) Walk(root string) error {
 	ignorefiles := make([]*ignorefile, 0, 100)
 	entries := make(entries, 0, 10000)
 	err := addIgnoreIfExists(&ignorefiles, root)
@@ -44,8 +41,8 @@ func walk(file *os.File, fileMu *sync.Mutex, root string, isIncludeFile bool) er
 			}
 		}
 
-		for i := len(ignorefiles) - 1; i >= 0; i-- {
-			igf := ignorefiles[i]
+		for j := len(ignorefiles) - 1; j >= 0; j-- {
+			igf := ignorefiles[j]
 
 			if strings.HasPrefix(path, igf.dir) {
 				trimmed := path[len(igf.dir):]
@@ -53,7 +50,7 @@ func walk(file *os.File, fileMu *sync.Mutex, root string, isIncludeFile bool) er
 					trimmed += "/"
 				}
 				match := igf.p.Match(trimmed)
-				if (match && isIncludeFile || !match && !isIncludeFile) && path != root {
+				if (match && i.typ == Include || !match && i.typ == Ignore) && path != root {
 					if t.IsDir() {
 						return filepath.SkipDir
 					}
@@ -72,8 +69,14 @@ func walk(file *os.File, fileMu *sync.Mutex, root string, isIncludeFile bool) er
 		return err
 	}
 
-	fileMu.Lock()
-	defer fileMu.Unlock()
+	growLen := 0
+	for _, entry := range entries {
+		growLen += entry.Len()
+	}
+
+	i.bufMu.Lock()
+	defer i.bufMu.Unlock()
+	i.buf.Grow(growLen)
 
 outer:
 	for _, entry := range entries {
@@ -86,14 +89,16 @@ outer:
 				}
 			}
 		}
+		s := entry.String()
+		if _, ok := i.existing[s[:len(s)-1]]; ok {
+			continue
+		}
 
-		_, err = file.WriteString(entry.String())
+		_, err = i.buf.WriteString(s)
 		if err != nil {
 			return err
 		}
 	}
-
-	_, err = file.WriteString("\n")
 	return err
 }
 

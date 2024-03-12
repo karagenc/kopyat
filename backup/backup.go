@@ -119,7 +119,7 @@ func (backup *Backup) Do() error {
 			}
 		}
 	} else {
-		err := backup.Paths.generateIfile()
+		err := backup.Paths.generateIfile(backup.shell)
 		defer os.Remove(backup.Paths.ifilePath())
 		if err != nil {
 			return err
