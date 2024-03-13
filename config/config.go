@@ -169,9 +169,27 @@ func (c *Config) Check() error {
 		}
 	}
 
-	for _, backup := range c.Backups.Run {
-		if backup.Restic == nil {
+	for _, run := range c.Backups.Run {
+		if run.Restic == nil {
 			return fmt.Errorf("configuration: field `restic` cannot be empty")
+		}
+		if !filepath.IsAbs(run.Base) {
+			return fmt.Errorf("backup base path `%s` is not absolute. to avoid confusion, backup base path must be absolute.", run.Base)
+		}
+		for _, path := range run.Paths {
+			path = filepath.Join(run.Base, path)
+			if !filepath.IsAbs(path) {
+				return fmt.Errorf("backup path `%s` is not absolute. to avoid confusion, either backup base path or the paths must be absolute.", path)
+			}
+		}
+	}
+
+	for _, run := range c.IfileGeneration.Run {
+		if !filepath.IsAbs(run.Ifile) {
+			return fmt.Errorf("ifile path `%s` is not absolute. to avoid confusion, it must be absolute.", run.Ifile)
+		}
+		if !filepath.IsAbs(run.ScanPath) {
+			return fmt.Errorf("scan_path `%s` is not absolute. to avoid confusion, it must be absolute.", run.ScanPath)
 		}
 	}
 	return nil
