@@ -107,6 +107,11 @@ func (c *Config) PlaceEnvironmentVariables() {
 		}
 	}
 
+	for key, value := range c.Env {
+		replace(&value)
+		os.Setenv(key, value)
+	}
+
 	replace(&c.Daemon.Log)
 	replace(&c.Daemon.API.Cert)
 	replace(&c.Daemon.API.Key)
