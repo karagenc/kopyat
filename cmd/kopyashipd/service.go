@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -12,6 +14,7 @@ import (
 	"github.com/gofrs/flock"
 	"github.com/kardianos/service"
 	"github.com/kirsle/configdir"
+	"github.com/labstack/echo/v4"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/tomruk/kopyaship/config"
@@ -21,7 +24,11 @@ import (
 )
 
 type svice struct {
-	service  service.Service
+	service service.Service
+
+	e *echo.Echo
+	s *http.Server
+
 	cacheDir string
 	config   *_config.Config
 	v        *viper.Viper
@@ -59,9 +66,13 @@ func (v *svice) Start(s service.Service) (err error) {
 		if err != nil {
 			return
 		}
+
+		var listen func() error
+		v.e, v.s, listen, err = v.newAPIServer()
+
 		if v.config.Daemon.API.Enabled {
 			go func() {
-				err := v.serve()
+				err := listen()
 				if err != nil {
 					errChan <- fmt.Errorf("api: %v", err)
 					s.Stop()
@@ -179,5 +190,8 @@ func (v *svice) Stop(s service.Service) (err error) {
 	if v.lock != nil {
 		v.lock.Unlock()
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	v.e.Shutdown(ctx)
+	cancel()
 	return
 }

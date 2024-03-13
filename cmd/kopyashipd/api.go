@@ -12,13 +12,11 @@ import (
 
 func setupRouter(e *echo.Echo) {}
 
-func (v *svice) serve() (err error) {
-	var (
-		e = echo.New()
-		s = http.Server{
-			Handler: e,
-		}
-	)
+func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() error, err error) {
+	e = echo.New()
+	s = &http.Server{
+		Handler: e,
+	}
 
 	setupRouter(e)
 
@@ -26,16 +24,17 @@ func (v *svice) serve() (err error) {
 		socketPath := filepath.Join(v.cacheDir, "api.socket")
 		l, err := net.Listen("unix", socketPath)
 		if err != nil {
-			return err
+			return nil, nil, nil, err
 		}
 		v.log.Sugar().Infof("Listening on unix socket: %s", socketPath)
-		return s.Serve(l)
+		listen = func() error { return s.Serve(l) }
+		return e, s, listen, err
 	} else {
 		u, err := url.Parse(v.config.Daemon.API.Listen)
 		if err != nil {
-			return err
+			return nil, nil, nil, err
 		} else if u.Path != "/" && u.Path != "" {
-			return fmt.Errorf("custom path in URL not supported")
+			return nil, nil, nil, fmt.Errorf("custom path in URL not supported")
 		}
 
 		switch u.Scheme {
@@ -46,7 +45,9 @@ func (v *svice) serve() (err error) {
 			}
 			s.Addr = u.Hostname() + ":" + port
 			v.log.Sugar().Infof("Listening on: %s://%s:%s", u.Scheme, u.Hostname(), port)
-			return s.ListenAndServeTLS(v.config.Daemon.API.Cert, v.config.Daemon.API.Key)
+
+			listen = func() error { return s.ListenAndServeTLS(v.config.Daemon.API.Cert, v.config.Daemon.API.Key) }
+			return e, s, listen, nil
 		case "http":
 			port := u.Port()
 			if port == "" {
@@ -54,9 +55,10 @@ func (v *svice) serve() (err error) {
 			}
 			s.Addr = u.Hostname() + ":" + port
 			v.log.Sugar().Infof("Listening on: %s://%s:%s", u.Scheme, u.Hostname(), port)
-			return s.ListenAndServe()
+			listen = func() error { return s.ListenAndServe() }
+			return e, s, listen, nil
 		default:
-			return fmt.Errorf("invalid scheme: %s", u.Scheme)
+			return nil, nil, nil, fmt.Errorf("invalid scheme: %s", u.Scheme)
 		}
 	}
 }
