@@ -82,11 +82,6 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 	if err != nil {
 		return
 	}
-	config.PlaceEnvironmentVariables()
-	err = config.Check()
-	if err != nil {
-		return
-	}
 	configFile, err = filepath.Abs(v.ConfigFileUsed())
 	if err != nil {
 		return

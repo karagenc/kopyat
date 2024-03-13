@@ -36,6 +36,10 @@ func init() {
 		systemWide := initConfig()
 		initCache(systemWide)
 		config.PlaceEnvironmentVariables()
+		err := config.Check()
+		if err != nil {
+			exit(err)
+		}
 	})
 }
 

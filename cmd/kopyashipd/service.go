@@ -62,6 +62,10 @@ func (v *svice) Start(s service.Service) (err error) {
 			return
 		}
 		v.config.PlaceEnvironmentVariables()
+		err = v.config.Check()
+		if err != nil {
+			return
+		}
 		err = v.initLock()
 		if err != nil {
 			return
