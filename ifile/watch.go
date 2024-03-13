@@ -33,6 +33,21 @@ const (
 
 const failAfter = 20 // 20 seconds
 
+func (s Status) String() string {
+	switch s {
+	case StatusWillRun:
+		return "will run"
+	case StatusRunning:
+		return "running"
+	case StatusFailed:
+		return "failed"
+	case StatusStopped:
+		return "stopped"
+	default:
+		return "<invalid status>"
+	}
+}
+
 func NewWatchJob(log *zap.Logger, ScanPath, Ifile string) *WatchJob {
 	j := &WatchJob{
 		log:      log,
