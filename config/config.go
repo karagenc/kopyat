@@ -12,11 +12,11 @@ import (
 
 type (
 	Config struct {
-		Daemon  Daemon            `mapstructure:"daemon"`
-		Env     map[string]string `mapstructure:"env"`
-		Scripts Scripts           `mapstructure:"scripts"`
-		IfileGeneration
-		Backups Backups `mapstructure:"backups"`
+		Daemon          Daemon            `mapstructure:"daemon"`
+		Env             map[string]string `mapstructure:"env"`
+		Scripts         Scripts           `mapstructure:"scripts"`
+		IfileGeneration IfileGeneration   `mapstructure:"ifile_generation"`
+		Backups         Backups           `mapstructure:"backups"`
 	}
 
 	IfileGeneration struct {
@@ -25,17 +25,9 @@ type (
 	}
 
 	IfileGenerationRun struct {
-		ScanPath  string `mapstructure:"scan_path"`
-		Recursive bool   `mapstructure:"recursive"`
-		Ifile     string `mapstructure:"ifile"`
-		Hooks     Hooks  `mapstructure:"hooks"`
-	}
-
-	Daemon struct {
-		Log          string `mapstructure:"log"`
-		Notification struct {
-			Enabled bool `mapstructure:"enabled"`
-		} `mapstructure:"notification"`
+		ScanPath string `mapstructure:"scan_path"`
+		Ifile    string `mapstructure:"ifile"`
+		Hooks    Hooks  `mapstructure:"hooks"`
 	}
 
 	Scripts struct {
