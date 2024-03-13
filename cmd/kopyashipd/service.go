@@ -1,0 +1,183 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"os/user"
+	"path/filepath"
+	"runtime"
+	"sync"
+	"time"
+
+	"github.com/gofrs/flock"
+	"github.com/kardianos/service"
+	"github.com/kirsle/configdir"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+	"github.com/tomruk/kopyaship/config"
+	_config "github.com/tomruk/kopyaship/config"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+)
+
+type svice struct {
+	service  service.Service
+	cacheDir string
+	config   *_config.Config
+	v        *viper.Viper
+	lock     *flock.Flock
+	log      *zap.Logger
+
+	once    sync.Once
+	errChan <-chan error
+}
+
+func (v *svice) Start(s service.Service) (err error) {
+	v.once.Do(func() {
+		errChan := make(chan error, 1)
+		v.errChan = errChan
+		v.service = s
+
+		pflag.StringP("config", "c", "", "Configuration file")
+		pflag.Parse()
+
+		var systemWide bool
+		systemWide, err = v.initConfig()
+		if err != nil {
+			return
+		}
+		err = v.initCache(systemWide)
+		if err != nil {
+			return
+		}
+		v.config.PlaceEnvironmentVariables()
+		err = v.initLock()
+		if err != nil {
+			return
+		}
+		v.log, err = v.newLogger(false)
+		if err != nil {
+			return
+		}
+		if v.config.Daemon.API.Enabled {
+			go func() {
+				err := v.serve()
+				if err != nil {
+					errChan <- fmt.Errorf("api: %v", err)
+					s.Stop()
+				}
+			}()
+		}
+	})
+	return
+}
+
+func (v *svice) initConfig() (systemWide bool, err error) {
+	configFile, _ := pflag.CommandLine.GetString("config")
+	v.config, v.v, systemWide, err = config.Read(configFile)
+	if err != nil {
+		return
+	}
+	err = os.Chdir(filepath.Dir(v.v.ConfigFileUsed()))
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (v *svice) initCache(systemWide bool) error {
+	v.cacheDir = os.Getenv("KOPYASHIP_CACHE")
+	if v.cacheDir == "" {
+		if systemWide {
+			if runtime.GOOS != "windows" {
+				v.cacheDir = "/var/cache/kopyaship"
+			} else {
+				v.cacheDir = filepath.Join(os.Getenv("PROGRAMDATA"), "kopyaship", "cache")
+			}
+		} else {
+			v.cacheDir = filepath.Join(configdir.LocalCache(), "kopyaship")
+		}
+		os.Setenv("KOPYASHIP_CACHE", v.cacheDir)
+	}
+	if _, err := os.Stat(v.cacheDir); os.IsNotExist(err) {
+		err = os.MkdirAll(v.cacheDir, 0755)
+		if err != nil {
+			return fmt.Errorf("could not create the cache directory: %v", err)
+		}
+	}
+	return nil
+}
+
+func (v *svice) initLock() error {
+	user, err := user.Current()
+	if err != nil {
+		return err
+	}
+	lockFile := filepath.Join(v.cacheDir, "kopyashipd_"+user.Username+".lock")
+	v.lock = flock.New(lockFile)
+
+	go func() {
+		time.Sleep(2 * time.Second)
+		if !v.lock.Locked() {
+			fmt.Printf("The lockfile %s is being used by another instance. Waiting.", lockFile)
+		}
+	}()
+	err = v.lock.Lock()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (v *svice) newLogger(debug bool) (*zap.Logger, error) {
+	development := false
+	level := zap.NewAtomicLevelAt(zap.InfoLevel)
+	if debug {
+		level = zap.NewAtomicLevelAt(zap.DebugLevel)
+		development = true
+	}
+
+	outputPaths := []string{"stdout"}
+	if v.config.Daemon.Log != "" {
+		outputPaths = append(outputPaths, v.config.Daemon.Log)
+	}
+
+	logConfig := &zap.Config{
+		Encoding:    "json",
+		Level:       level,
+		Development: development,
+		Sampling: &zap.SamplingConfig{
+			Initial:    100,
+			Thereafter: 100,
+		},
+		OutputPaths: outputPaths,
+		EncoderConfig: zapcore.EncoderConfig{
+			NameKey:       "logger",
+			TimeKey:       "ts",
+			LevelKey:      "level",
+			CallerKey:     "caller",
+			FunctionKey:   "func",
+			MessageKey:    "msg",
+			StacktraceKey: "stacktrace",
+			LineEnding:    zapcore.DefaultLineEnding,
+			EncodeLevel:   zapcore.LowercaseLevelEncoder,
+			EncodeTime:    zapcore.EpochTimeEncoder,
+			// EncodeTime: zapcore.TimeEncoderOfLayout(""),
+			EncodeDuration: zapcore.SecondsDurationEncoder,
+			EncodeCaller:   zapcore.ShortCallerEncoder,
+		},
+	}
+
+	return logConfig.Build()
+}
+
+func (v *svice) Stop(s service.Service) (err error) {
+	select {
+	case err = <-v.errChan:
+	default:
+	}
+	if v.lock != nil {
+		v.lock.Unlock()
+	}
+	return
+}
