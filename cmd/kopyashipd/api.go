@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 
 	"github.com/labstack/echo/v4"
@@ -27,6 +28,7 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 
 	if v.config.Daemon.API.Listen == "ipc" {
 		socketPath := filepath.Join(v.cacheDir, "api.socket")
+		os.Remove(socketPath)
 		l, err := net.Listen("unix", socketPath)
 		if err != nil {
 			return nil, nil, nil, err
