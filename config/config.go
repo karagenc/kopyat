@@ -176,7 +176,7 @@ func (c *Config) Check() error {
 			}
 			path = filepath.Join(run.Base, path)
 			if !filepath.IsAbs(path) {
-				return fmt.Errorf("backup path `%s` is not absolute. to avoid confusion, either backup base path or the paths must be absolute.", path)
+				return fmt.Errorf("backup path `%s` is not absolute. to prevent confusion, ensure clarity by either setting the base path or setting paths to absolute paths.", path)
 			}
 		}
 	}
