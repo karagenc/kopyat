@@ -42,7 +42,7 @@ type (
 )
 
 const (
-	Include = iota
+	Include IncludeOrIgnore = iota
 	Ignore
 )
 
