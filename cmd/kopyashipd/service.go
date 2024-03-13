@@ -26,6 +26,9 @@ import (
 type svice struct {
 	service service.Service
 
+	jobs   []job
+	jobsMu sync.Mutex
+
 	e *echo.Echo
 	s *http.Server
 
@@ -78,9 +81,30 @@ func (v *svice) Start(s service.Service) (err error) {
 				err := listen()
 				if err != nil {
 					errChan <- fmt.Errorf("api: %v", err)
-					s.Stop()
+					err := s.Stop()
+					if err != nil {
+						v.log.Error(err.Error())
+					}
 				}
 			}()
+		}
+
+		var jobs []job
+		jobs, err = v.initJobsFromConfig()
+		if err != nil {
+			return
+		}
+		for _, j := range jobs {
+			go func(j job) {
+				err := j.Start()
+				if err != nil {
+					errChan <- fmt.Errorf("api: %v", err)
+					err := s.Stop()
+					if err != nil {
+						v.log.Error(err.Error())
+					}
+				}
+			}(j)
 		}
 	})
 	return
