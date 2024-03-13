@@ -28,6 +28,7 @@ type (
 	IfileGenerationRun struct {
 		ScanPath string `mapstructure:"scan_path"`
 		Ifile    string `mapstructure:"ifile"`
+		Mode     string `mapstructure:"mode"`
 		Hooks    Hooks  `mapstructure:"hooks"`
 	}
 

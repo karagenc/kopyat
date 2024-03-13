@@ -15,7 +15,7 @@ import (
 
 type (
 	Ifile struct {
-		typ      IncludeOrIgnore
+		mode     Mode
 		existing map[string]interface{}
 		buf      bytes.Buffer
 		bufMu    sync.Mutex
@@ -38,11 +38,11 @@ type (
 		dir string
 	}
 
-	IncludeOrIgnore int
+	Mode int
 )
 
 const (
-	Include IncludeOrIgnore = iota
+	Include Mode = iota
 	Ignore
 )
 
@@ -52,9 +52,9 @@ const (
 	endIndicator   = "# I_END"
 )
 
-func New(filePath string, typ IncludeOrIgnore, appendToExisting, shell bool) (ifile *Ifile, err error) {
+func New(filePath string, mode Mode, appendToExisting, shell bool) (ifile *Ifile, err error) {
 	ifile = &Ifile{
-		typ:      typ,
+		mode:     mode,
 		filePath: filePath,
 	}
 

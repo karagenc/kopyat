@@ -50,7 +50,7 @@ func (i *Ifile) Walk(root string) error {
 					trimmed += "/"
 				}
 				match := igf.p.Match(trimmed)
-				if (match && i.typ == Include || !match && i.typ == Ignore) && path != root {
+				if (match && i.mode == Include || !match && i.mode == Ignore) && path != root {
 					if t.IsDir() {
 						return filepath.SkipDir
 					}

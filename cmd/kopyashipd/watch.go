@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -20,7 +21,16 @@ func (v *svice) getWatchJobs(c echo.Context) error {
 
 func (v *svice) initWatchJobsFromConfig() (jobs []*ifile.WatchJob, err error) {
 	for _, run := range v.config.IfileGeneration.Run {
-		j := ifile.NewWatchJob(v.log, run.ScanPath, run.Ifile)
+		var mode ifile.Mode
+		switch run.Mode {
+		case "include":
+			mode = ifile.Include
+		case "ignore":
+			mode = ifile.Ignore
+		default:
+			return nil, fmt.Errorf("invalid mode: %s", run.Mode)
+		}
+		j := ifile.NewWatchJob(v.log, run.ScanPath, run.Ifile, mode)
 		jobs = append(jobs, j)
 		v.jobsMu.Lock()
 		v.watchJobs = append(v.watchJobs, j)

@@ -20,6 +20,7 @@ type (
 
 		scanPath string
 		ifile    string
+		mode     Mode
 	}
 
 	WatchJobStatus int32
@@ -28,6 +29,7 @@ type (
 		ScanPath string  `json:"scanPath"`
 		Ifile    string  `json:"ifile"`
 		Errors   []error `json:"errors"`
+		Mode     string  `json:"mode"`
 	}
 )
 
@@ -55,14 +57,15 @@ func (s WatchJobStatus) String() string {
 	}
 }
 
-func NewWatchJob(log *zap.Logger, ScanPath, Ifile string) *WatchJob {
+func NewWatchJob(log *zap.Logger, scanPath, ifile string, mode Mode) *WatchJob {
 	j := &WatchJob{
 		log:      log,
 		status:   atomic.Int32{},
 		stopped:  make(chan struct{}),
 		errs:     make(chan error, 5),
-		scanPath: ScanPath,
-		ifile:    Ifile,
+		scanPath: scanPath,
+		ifile:    ifile,
+		mode:     mode,
 	}
 	j.status.Store(int32(WatchJobStatusWillRun))
 	return j
@@ -86,19 +89,20 @@ func (j *WatchJob) Info() *WatchJobInfo {
 		}
 	}
 
+	mode := ""
+	switch j.mode {
+	case Include:
+		mode = "include"
+	case Ignore:
+		mode = "ignore"
+	}
+
 	return &WatchJobInfo{
 		ScanPath: j.scanPath,
 		Ifile:    j.ifile,
 		Errors:   errs,
+		Mode:     mode,
 	}
-}
-
-func (j *WatchJobInfo) String() string {
-	e := ""
-	for _, err := range j.Errors {
-		e += "    " + err.Error() + "\n"
-	}
-	return fmt.Sprintf("Scan path: %s\nIfile: %s\nErrors: %s", j.ScanPath, j.Ifile, e)
 }
 
 func (j *WatchJob) Start() error {
@@ -167,8 +171,7 @@ func (j *WatchJob) sleepBeforeRetry(seconds time.Duration) {
 func (j *WatchJob) fail() { j.status.Store(int32(WatchJobStatusFailed)) }
 
 func (j *WatchJob) walk() error {
-	// TODO: Arguments
-	i, err := New(j.ifile, Include, true, true)
+	i, err := New(j.ifile, j.mode, true, false)
 	if err != nil {
 		return err
 	}

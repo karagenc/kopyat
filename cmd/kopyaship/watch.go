@@ -39,11 +39,11 @@ var (
 			fmt.Println()
 			w := table.NewWriter()
 			w.AppendHeader(table.Row{
-				"IFILE", "SCAN PATH", "ERRORS",
+				"IFILE", "SCAN PATH", "MODE", "ERRORS",
 			})
 			for _, info := range infos {
 				w.AppendRow(table.Row{
-					info.Ifile, info.ScanPath, info.Errors,
+					info.Ifile, info.ScanPath, info.Mode, info.Errors,
 				})
 			}
 			fmt.Println(w.Render())
