@@ -19,6 +19,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tomruk/kopyaship/config"
 	_config "github.com/tomruk/kopyaship/config"
+	"github.com/tomruk/kopyaship/ifile"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -26,7 +27,7 @@ import (
 type svice struct {
 	service service.Service
 
-	jobs   []job
+	jobs   []*ifile.WatchJob
 	jobsMu sync.Mutex
 
 	e *echo.Echo
@@ -89,13 +90,13 @@ func (v *svice) Start(s service.Service) (err error) {
 			}()
 		}
 
-		var jobs []job
+		var jobs []*ifile.WatchJob
 		jobs, err = v.initJobsFromConfig()
 		if err != nil {
 			return
 		}
 		for _, j := range jobs {
-			go func(j job) {
+			go func(j *ifile.WatchJob) {
 				err := j.Start()
 				if err != nil {
 					errChan <- fmt.Errorf("api: %v", err)
