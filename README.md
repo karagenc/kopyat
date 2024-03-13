@@ -1,6 +1,6 @@
 # kopyaship
 
-The name kopyaship comes from 2 words: kopya (Turkish for "copy") and ship -> copyship.
+The name kopyaship comes from 2 words: kopya (Turkish for "copy") and ship -> copyship. It is pronounced as copiaship.
 
 ## Configuration
 
