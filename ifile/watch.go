@@ -16,6 +16,7 @@ type (
 		log     *zap.Logger
 		status  atomic.Int32
 		stopped chan struct{}
+		errs    chan error
 
 		scanPath string
 		ifile    string
@@ -53,6 +54,7 @@ func NewWatchJob(log *zap.Logger, ScanPath, Ifile string) *WatchJob {
 		log:      log,
 		status:   atomic.Int32{},
 		stopped:  make(chan struct{}),
+		errs:     make(chan error, 5),
 		scanPath: ScanPath,
 		ifile:    Ifile,
 	}
@@ -65,6 +67,8 @@ func (j *WatchJob) ScanPath() string { return j.scanPath }
 func (j *WatchJob) Ifile() string { return j.ifile }
 
 func (j *WatchJob) Status() WatchJobStatus { return WatchJobStatus(j.status.Load()) }
+
+func (j *WatchJob) Errors() <-chan error { return j.errs }
 
 func (j *WatchJob) Start() error {
 	go func() {
@@ -117,6 +121,10 @@ func (j *WatchJob) logError(err error) {
 	if err != nil {
 		err = fmt.Errorf("watch: %v", err)
 		j.log.Error(err.Error())
+		select {
+		case j.errs <- err:
+		default:
+		}
 	}
 }
 
