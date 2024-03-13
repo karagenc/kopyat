@@ -34,7 +34,7 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 		if err != nil {
 			return nil, nil, nil, err
 		} else if u.Path != "/" && u.Path != "" {
-			return nil, nil, nil, fmt.Errorf("custom path in URL not supported")
+			return nil, nil, nil, fmt.Errorf("custom path in URL is not supported")
 		}
 
 		switch u.Scheme {

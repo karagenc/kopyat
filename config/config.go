@@ -150,6 +150,17 @@ func (c *Config) PlaceEnvironmentVariables() {
 }
 
 func (c *Config) Check() error {
+	if c.Daemon.API.Enabled {
+		if c.Daemon.API.Listen != "ipc" {
+			u, err := url.Parse(c.Daemon.API.Listen)
+			if err != nil {
+				return err
+			} else if u.Path != "/" && u.Path != "" {
+				return fmt.Errorf("custom path in URL is not supported. remove '%s' from config", u.Path)
+			}
+		}
+	}
+
 	for _, backup := range c.Backups.Run {
 		if backup.Restic == nil {
 			return fmt.Errorf("configuration: field `restic` cannot be empty")
