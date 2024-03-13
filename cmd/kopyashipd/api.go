@@ -10,7 +10,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func setupRouter(e *echo.Echo) {}
+func setupRouter(e *echo.Echo) {
+	e.GET("/ping", func(c echo.Context) error {
+		c.String(http.StatusOK, "Pong")
+		return nil
+	})
+}
 
 func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() error, err error) {
 	e = echo.New()
