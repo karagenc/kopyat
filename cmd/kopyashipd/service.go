@@ -27,8 +27,8 @@ import (
 type svice struct {
 	service service.Service
 
-	jobs   []*ifile.WatchJob
-	jobsMu sync.Mutex
+	watchJobs []*ifile.WatchJob
+	jobsMu    sync.Mutex
 
 	e *echo.Echo
 	s *http.Server
@@ -91,7 +91,7 @@ func (v *svice) Start(s service.Service) (err error) {
 		}
 
 		var jobs []*ifile.WatchJob
-		jobs, err = v.initJobsFromConfig()
+		jobs, err = v.initWatchJobsFromConfig()
 		if err != nil {
 			return
 		}
@@ -226,6 +226,15 @@ func (v *svice) Stop(s service.Service) (err error) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		v.e.Shutdown(ctx)
 		cancel()
+	}
+
+	v.jobsMu.Lock()
+	defer v.jobsMu.Unlock()
+	for _, job := range v.watchJobs {
+		jobErr := job.Stop()
+		if err == nil && jobErr != nil {
+			err = jobErr
+		}
 	}
 	return
 }
