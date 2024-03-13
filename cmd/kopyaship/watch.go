@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 	"github.com/tomruk/kopyaship/ifile"
 )
@@ -35,9 +36,18 @@ var (
 				exit(err)
 			}
 
+			fmt.Println()
+			w := table.NewWriter()
+			w.AppendHeader(table.Row{
+				"IFILE", "SCAN PATH", "ERRORS",
+			})
 			for _, info := range infos {
-				fmt.Printf("Watch Info:\n%s\n\n", info.String())
+				w.AppendRow(table.Row{
+					info.Ifile, info.ScanPath, info.Errors,
+				})
 			}
+			fmt.Println(w.Render())
+			fmt.Println()
 		},
 	}
 )
