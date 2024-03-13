@@ -21,27 +21,27 @@ type (
 		ifile    string
 	}
 
-	Status int32
+	WatchJobStatus int32
 )
 
 const (
-	StatusWillRun Status = iota
-	StatusRunning
-	StatusFailed
-	StatusStopped
+	WatchJobStatusWillRun WatchJobStatus = iota
+	WatchJobStatusRunning
+	WatchJobStatusFailed
+	WatchJobStatusStopped
 )
 
 const failAfter = 20 // 20 seconds
 
-func (s Status) String() string {
+func (s WatchJobStatus) String() string {
 	switch s {
-	case StatusWillRun:
+	case WatchJobStatusWillRun:
 		return "will run"
-	case StatusRunning:
+	case WatchJobStatusRunning:
 		return "running"
-	case StatusFailed:
+	case WatchJobStatusFailed:
 		return "failed"
-	case StatusStopped:
+	case WatchJobStatusStopped:
 		return "stopped"
 	default:
 		return "<invalid status>"
@@ -56,7 +56,7 @@ func NewWatchJob(log *zap.Logger, ScanPath, Ifile string) *WatchJob {
 		scanPath: ScanPath,
 		ifile:    Ifile,
 	}
-	j.status.Store(int32(StatusWillRun))
+	j.status.Store(int32(WatchJobStatusWillRun))
 	return j
 }
 
@@ -64,7 +64,7 @@ func (j *WatchJob) ScanPath() string { return j.scanPath }
 
 func (j *WatchJob) Ifile() string { return j.ifile }
 
-func (j *WatchJob) Status() Status { return Status(j.status.Load()) }
+func (j *WatchJob) Status() WatchJobStatus { return WatchJobStatus(j.status.Load()) }
 
 func (j *WatchJob) Start() error {
 	go func() {
@@ -89,7 +89,7 @@ func (j *WatchJob) Start() error {
 				continue
 			}
 
-			j.status.Store(int32(StatusRunning))
+			j.status.Store(int32(WatchJobStatusRunning))
 
 			for {
 				select {
@@ -125,7 +125,7 @@ func (j *WatchJob) sleepBeforeRetry(seconds time.Duration) {
 	j.log.Sugar().Info("retry in %d second(s)", seconds)
 }
 
-func (j *WatchJob) fail() { j.status.Store(int32(StatusFailed)) }
+func (j *WatchJob) fail() { j.status.Store(int32(WatchJobStatusFailed)) }
 
 func (j *WatchJob) walk() error {
 	// TODO: Arguments
@@ -139,7 +139,7 @@ func (j *WatchJob) walk() error {
 
 func (j *WatchJob) Stop() error {
 	close(j.stopped)
-	j.status.Store(int32(StatusStopped))
+	j.status.Store(int32(WatchJobStatusStopped))
 	return nil
 }
 
