@@ -59,8 +59,9 @@ func initCache(systemWide bool) {
 				cacheDir = filepath.Join(os.Getenv("PROGRAMDATA"), "kopyaship", "cache")
 			}
 		} else {
-			cacheDir = configdir.LocalCache()
+			cacheDir = filepath.Join(configdir.LocalCache(), "kopyaship")
 		}
+		os.Setenv("KOPYASHIP_CACHE", cacheDir)
 	}
 	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
 		err = os.MkdirAll(cacheDir, 0755)
