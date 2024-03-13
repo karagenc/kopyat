@@ -29,6 +29,7 @@ func init() {
 	cobra.OnInitialize(func() {
 		systemWide := initConfig()
 		initCache(systemWide)
+		config.PlaceEnvironmentVariables()
 	})
 }
 

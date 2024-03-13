@@ -97,10 +97,64 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 	if err != nil {
 		return
 	}
+	os.Setenv("KOPYASHIP_CONFIG", configFile)
 	if strings.HasPrefix(configFile, "/etc") || (runtime.GOOS == "windows" && strings.HasPrefix(configFile, os.Getenv("PROGRAMDATA"))) {
 		systemWide = true
 	}
 	return
+}
+
+func (c *Config) PlaceEnvironmentVariables() {
+	replace := func(r *string) {
+		for _, env := range os.Environ() {
+			splitted := strings.Split(env, "=")
+			key := splitted[0]
+			value := splitted[1]
+			*r = strings.ReplaceAll(*r, "$"+key, value)
+		}
+	}
+
+	replace(&c.Daemon.Log)
+	replace(&c.Daemon.API.Cert)
+	replace(&c.Daemon.API.Key)
+	replace(&c.Scripts.Location)
+
+	for i := range c.IfileGeneration.Hooks.Pre {
+		replace(&c.IfileGeneration.Hooks.Pre[i])
+	}
+	for i := range c.IfileGeneration.Hooks.Post {
+		replace(&c.IfileGeneration.Hooks.Post[i])
+	}
+	for i := range c.IfileGeneration.Run {
+		replace(&c.IfileGeneration.Run[i].Ifile)
+		replace(&c.IfileGeneration.Run[i].ScanPath)
+		for j := range c.IfileGeneration.Run[i].Hooks.Pre {
+			replace(&c.IfileGeneration.Run[i].Hooks.Pre[j])
+		}
+		for j := range c.IfileGeneration.Run[i].Hooks.Post {
+			replace(&c.IfileGeneration.Run[i].Hooks.Post[j])
+		}
+	}
+
+	for i := range c.Backups.Hooks.Pre {
+		replace(&c.Backups.Hooks.Pre[i])
+	}
+	for i := range c.Backups.Hooks.Post {
+		replace(&c.Backups.Hooks.Post[i])
+	}
+	for i := range c.Backups.Run {
+		replace(&c.Backups.Run[i].Restic.Repo)
+		for j := range c.Backups.Run[i].Hooks.Pre {
+			replace(&c.Backups.Run[i].Hooks.Pre[j])
+		}
+		for j := range c.Backups.Run[i].Hooks.Post {
+			replace(&c.Backups.Run[i].Hooks.Post[j])
+		}
+		replace(&c.Backups.Run[i].Base)
+		for j := range c.Backups.Run[i].Paths {
+			replace(&c.Backups.Run[i].Paths[j])
+		}
+	}
 }
 
 func (c *Config) Check() error {
