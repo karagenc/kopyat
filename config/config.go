@@ -113,6 +113,7 @@ func (c *Config) PlaceEnvironmentVariables() {
 	}
 
 	replace(&c.Daemon.Log)
+	replace(&c.Daemon.API.Listen)
 	replace(&c.Daemon.API.Cert)
 	replace(&c.Daemon.API.Key)
 	replace(&c.Scripts.Location)
@@ -142,6 +143,7 @@ func (c *Config) PlaceEnvironmentVariables() {
 	}
 	for i := range c.Backups.Run {
 		replace(&c.Backups.Run[i].Restic.Repo)
+		replace(&c.Backups.Run[i].Restic.ExtraArgs)
 		for j := range c.Backups.Run[i].Hooks.Pre {
 			replace(&c.Backups.Run[i].Hooks.Pre[j])
 		}
