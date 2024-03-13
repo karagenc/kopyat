@@ -69,6 +69,9 @@ func (v *svice) Start(s service.Service) (err error) {
 
 		var listen func() error
 		v.e, v.s, listen, err = v.newAPIServer()
+		if err != nil {
+			return
+		}
 
 		if v.config.Daemon.API.Enabled {
 			go func() {
@@ -190,8 +193,14 @@ func (v *svice) Stop(s service.Service) (err error) {
 	if v.lock != nil {
 		v.lock.Unlock()
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	v.e.Shutdown(ctx)
-	cancel()
+	if v.config != nil && v.e != nil {
+		if v.config.Daemon.API.Listen == "ipc" {
+			socketPath := filepath.Join(v.cacheDir, "api.socket")
+			defer os.Remove(socketPath)
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		v.e.Shutdown(ctx)
+		cancel()
+	}
 	return
 }
