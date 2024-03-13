@@ -2,6 +2,11 @@ daemon:
   log: /var/log/kopyaship.log
   notification:
     enabled: true
+  api:
+    enabled: true
+    listen: ipc
+    #cert:
+    #key:
 
 env:
   HOSTNAME: foobar
@@ -15,7 +20,6 @@ ifile_generation:
     post:
   run:
     - scan_path: /path/to/st-dir
-      recursive: true
       ifile: /path/to/st-dir/.stignore
       hooks:
         pre:
