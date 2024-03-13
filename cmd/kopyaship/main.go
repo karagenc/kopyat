@@ -26,8 +26,11 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(backupCmd)
 	rootCmd.AddCommand(pingCmd)
+	rootCmd.AddCommand(watchCmd)
 
 	rootCmd.PersistentFlags().StringP("config", "c", "", "Configuration file")
+
+	watchCmd.AddCommand(watchListCmd)
 
 	cobra.OnInitialize(func() {
 		systemWide := initConfig()

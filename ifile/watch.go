@@ -23,6 +23,12 @@ type (
 	}
 
 	WatchJobStatus int32
+
+	WatchJobInfo struct {
+		ScanPath string  `json:"scanPath"`
+		Ifile    string  `json:"ifile"`
+		Errors   []error `json:"errors"`
+	}
 )
 
 const (
@@ -69,6 +75,31 @@ func (j *WatchJob) Ifile() string { return j.ifile }
 func (j *WatchJob) Status() WatchJobStatus { return WatchJobStatus(j.status.Load()) }
 
 func (j *WatchJob) Errors() <-chan error { return j.errs }
+
+func (j *WatchJob) Info() *WatchJobInfo {
+	errs := make([]error, 0, len(j.errs))
+	for range len(j.errs) {
+		select {
+		case err := <-j.errs:
+			errs = append(errs, err)
+		default:
+		}
+	}
+
+	return &WatchJobInfo{
+		ScanPath: j.scanPath,
+		Ifile:    j.ifile,
+		Errors:   errs,
+	}
+}
+
+func (j *WatchJobInfo) String() string {
+	e := ""
+	for _, err := range j.Errors {
+		e += "    " + err.Error() + "\n"
+	}
+	return fmt.Sprintf("Scan path: %s\nIfile: %s\nErrors: %s", j.ScanPath, j.Ifile, e)
+}
 
 func (j *WatchJob) Start() error {
 	go func() {

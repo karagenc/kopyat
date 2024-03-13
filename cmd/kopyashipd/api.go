@@ -11,11 +11,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func setupRouter(e *echo.Echo) {
+func (v *svice) setupRouter(e *echo.Echo) {
 	e.GET("/ping", func(c echo.Context) error {
 		c.String(http.StatusOK, "Pong")
 		return nil
 	})
+	e.GET("/jobs/watch", v.getWatchJobs)
 }
 
 func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() error, err error) {
@@ -24,7 +25,7 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 		Handler: e,
 	}
 
-	setupRouter(e)
+	v.setupRouter(e)
 
 	if v.config.Daemon.API.Listen == "ipc" {
 		socketPath := filepath.Join(v.cacheDir, "api.socket")
