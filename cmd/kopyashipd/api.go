@@ -13,8 +13,7 @@ import (
 
 func (v *svice) setupRouter(e *echo.Echo) {
 	e.GET("/ping", func(c echo.Context) error {
-		c.String(http.StatusOK, "Pong")
-		return nil
+		return c.String(http.StatusOK, "Pong")
 	})
 	e.GET("/jobs/watch", v.getWatchJobs)
 }
