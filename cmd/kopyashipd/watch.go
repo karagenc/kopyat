@@ -28,7 +28,10 @@ func (v *svice) initWatchJobsFromConfig() (jobs []*ifile.WatchJob, err error) {
 		case "ignore":
 			mode = ifile.Ignore
 		default:
-			return nil, fmt.Errorf("invalid mode: %s", run.Mode)
+			if run.Mode == "" {
+				return nil, fmt.Errorf("empty ifile mode. check configuration.")
+			}
+			return nil, fmt.Errorf("invalid ifile mode: %s", run.Mode)
 		}
 		j := ifile.NewWatchJob(v.log, run.ScanPath, run.Ifile, mode)
 		jobs = append(jobs, j)
