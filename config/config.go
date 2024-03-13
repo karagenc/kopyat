@@ -82,6 +82,7 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 	if err != nil {
 		return
 	}
+	config.PlaceEnvironmentVariables()
 	err = config.Check()
 	if err != nil {
 		return
@@ -98,14 +99,7 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 }
 
 func (c *Config) PlaceEnvironmentVariables() {
-	replace := func(r *string) {
-		for _, env := range os.Environ() {
-			splitted := strings.Split(env, "=")
-			key := splitted[0]
-			value := splitted[1]
-			*r = strings.ReplaceAll(*r, "$"+key, value)
-		}
-	}
+	replace := func(r *string) { *r = os.ExpandEnv(*r) }
 
 	for key, value := range c.Env {
 		replace(&value)
