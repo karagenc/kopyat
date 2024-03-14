@@ -38,6 +38,7 @@ type svice struct {
 	v        *viper.Viper
 	lock     *flock.Flock
 	log      *zap.Logger
+	_logger  *logger
 
 	once    sync.Once
 	errChan <-chan error
@@ -70,7 +71,7 @@ func (v *svice) Start(s service.Service) (err error) {
 		if err != nil {
 			return
 		}
-		v.log, err = v.newLogger(false)
+		v.log, v._logger, err = v.newLogger(false)
 		if err != nil {
 			return
 		}
@@ -172,7 +173,7 @@ func (v *svice) initLock() error {
 	return nil
 }
 
-func (v *svice) newLogger(debug bool) (*zap.Logger, error) {
+func (v *svice) newLogger(debug bool) (*zap.Logger, *logger, error) {
 	development := false
 	level := zap.NewAtomicLevelAt(zap.InfoLevel)
 	if debug {
@@ -211,7 +212,8 @@ func (v *svice) newLogger(debug bool) (*zap.Logger, error) {
 		},
 	}
 
-	return logConfig.Build()
+	l, err := logConfig.Build()
+	return l, newLogger(l), err
 }
 
 func (v *svice) Stop(s service.Service) (err error) {
