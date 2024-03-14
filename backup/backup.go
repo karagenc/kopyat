@@ -17,28 +17,27 @@ type (
 	Backups map[string]*Backup
 
 	Backup struct {
+		isDaemon bool
+
 		Name     string
 		Provider provider.Provider
 
 		GenerateIfile bool
-
-		IfOSIs   string
-		WarnSize int64
+		IfOSIs        string
+		WarnSize      int64
 
 		Paths *paths
-
-		shell bool
 	}
 )
 
-func FromConfig(config *config.Config, cacheDir string, shell bool) (backups Backups, err error) {
+func FromConfig(config *config.Config, cacheDir string, log utils.Logger, isDaemon bool) (backups Backups, err error) {
 	backups = make(Backups)
 
 	for _, backupConfig := range config.Backups.Run {
 		if strings.TrimSpace(backupConfig.Name) == "" {
 			return nil, fmt.Errorf("no name given to the backup configuration")
 		}
-		backup, skip, err := fromConfig(backupConfig, cacheDir, shell)
+		backup, skip, err := fromConfig(backupConfig, cacheDir, log, isDaemon)
 		if skip {
 			continue
 		}
@@ -50,13 +49,13 @@ func FromConfig(config *config.Config, cacheDir string, shell bool) (backups Bac
 	return
 }
 
-func fromConfig(backupConfig *config.Backup, cacheDir string, shell bool) (backup *Backup, skip bool, err error) {
+func fromConfig(backupConfig *config.Backup, cacheDir string, log utils.Logger, isDaemon bool) (backup *Backup, skip bool, err error) {
 	backup = &Backup{
+		isDaemon:      isDaemon,
 		Name:          backupConfig.Name,
-		Provider:      provider.NewRestic(backupConfig.Restic.Repo, backupConfig.Restic.ExtraArgs, backupConfig.Restic.Password, backupConfig.Restic.Sudo, shell),
+		Provider:      provider.NewRestic(backupConfig.Restic.Repo, backupConfig.Restic.ExtraArgs, backupConfig.Restic.Password, backupConfig.Restic.Sudo, log),
 		GenerateIfile: backupConfig.IfileGeneration,
 		IfOSIs:        backupConfig.Filter.IfOSIs,
-		shell:         shell,
 	}
 
 	if backup.skipOS() {
@@ -73,8 +72,9 @@ func fromConfig(backupConfig *config.Backup, cacheDir string, shell bool) (backu
 	}
 
 	backup.Paths = &paths{
-		backup:   backup,
+		log:      log,
 		cacheDir: cacheDir,
+		backup:   backup,
 		base:     backupConfig.Base,
 		paths:    backupConfig.Paths,
 	}
@@ -102,7 +102,7 @@ func (b *Backup) skipOS() bool {
 func (backup *Backup) Do() error {
 	if !backup.GenerateIfile {
 		_, isRestic := backup.Provider.(*provider.Restic)
-		if backup.shell && isRestic && !backup.Provider.PasswordIsSet() {
+		if !backup.isDaemon && isRestic && !backup.Provider.PasswordIsSet() {
 			reader := bufio.NewReader(os.Stdin)
 			fmt.Printf("Enter password for the repository: %s: ", backup.Provider.TargetLocation())
 			password, _ := reader.ReadString('\n')
@@ -119,7 +119,7 @@ func (backup *Backup) Do() error {
 			}
 		}
 	} else {
-		err := backup.Paths.generateIfile(backup.shell)
+		err := backup.Paths.generateIfile()
 		defer os.Remove(backup.Paths.ifilePath())
 		if err != nil {
 			return err
