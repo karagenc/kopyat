@@ -10,22 +10,30 @@ import (
 var pingCmd = &cobra.Command{
 	Use: "ping",
 	Run: func(cmd *cobra.Command, args []string) {
-		hc, err := newHTTPClient()
+		err := ping()
 		if err != nil {
 			exit(err)
 		}
-		r, err := hc.Get("/ping")
-		if err != nil {
-			exit(err)
-		}
-		defer r.Body.Close()
-		content, err := io.ReadAll(r.Body)
-		if err != nil {
-			exit(err)
-		}
-		if string(content) != "Pong" {
-			exit(fmt.Errorf("invalid response received: %s", string(content)))
-		}
-		fmt.Printf("%s!\n", string(content))
+		fmt.Println("Pong!")
 	},
+}
+
+func ping() error {
+	hc, err := newHTTPClient()
+	if err != nil {
+		return err
+	}
+	r, err := hc.Get("/ping")
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+	content, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+	if string(content) != "Pong" {
+		return fmt.Errorf("invalid response received: %s", string(content))
+	}
+	return nil
 }
