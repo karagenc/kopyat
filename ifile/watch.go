@@ -81,7 +81,7 @@ func (j *WatchJob) Errors() <-chan error { return j.errs }
 
 func (j *WatchJob) Info() *WatchJobInfo {
 	errs := make([]error, 0, len(j.errs))
-	for range len(j.errs) {
+	for i := 0; i < len(errs); i++ {
 		select {
 		case err := <-j.errs:
 			errs = append(errs, err)

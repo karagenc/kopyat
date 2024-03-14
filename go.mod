@@ -1,6 +1,6 @@
 module github.com/tomruk/kopyaship
 
-go 1.22
+go 1.20
 
 replace github.com/shibumi/go-pathspec v1.3.0 => ../go-pathspec
 
