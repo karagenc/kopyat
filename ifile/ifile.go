@@ -43,8 +43,8 @@ type (
 )
 
 const (
-	Include Mode = iota
-	Ignore
+	ModeRestic Mode = iota
+	ModeSyncthing
 )
 
 const (

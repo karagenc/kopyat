@@ -15,7 +15,7 @@ func (p *paths) ifilePath() string {
 func (p *paths) generateIfile() error {
 	g, _ := errgroup.WithContext(context.Background())
 
-	i, err := ifile.New(p.ifilePath(), ifile.Include, false, p.log)
+	i, err := ifile.New(p.ifilePath(), ifile.ModeRestic, false, p.log)
 	if err != nil {
 		return err
 	}

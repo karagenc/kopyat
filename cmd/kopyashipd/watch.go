@@ -22,16 +22,14 @@ func (v *svice) getWatchJobs(c echo.Context) error {
 func (v *svice) initWatchJobsFromConfig() (jobs []*ifile.WatchJob, err error) {
 	for _, run := range v.config.IfileGeneration.Run {
 		var mode ifile.Mode
-		switch run.Mode {
-		case "include":
-			mode = ifile.Include
-		case "ignore":
-			mode = ifile.Ignore
+		switch run.For {
+		case "syncthing":
+			mode = ifile.ModeSyncthing
 		default:
-			if run.Mode == "" {
-				return nil, fmt.Errorf("empty ifile mode. check configuration.")
+			if run.For == "" {
+				return nil, fmt.Errorf("empty 'for' field. check configuration.")
 			}
-			return nil, fmt.Errorf("invalid ifile mode: %s", run.Mode)
+			return nil, fmt.Errorf("invalid 'for': %s", run.For)
 		}
 		j := ifile.NewWatchJob(v._log, run.ScanPath, run.Ifile, mode)
 		jobs = append(jobs, j)

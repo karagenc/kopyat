@@ -91,9 +91,9 @@ func (j *WatchJob) Info() *WatchJobInfo {
 
 	mode := ""
 	switch j.mode {
-	case Include:
+	case ModeRestic:
 		mode = "include"
-	case Ignore:
+	case ModeSyncthing:
 		mode = "ignore"
 	}
 
