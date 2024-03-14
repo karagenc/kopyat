@@ -176,6 +176,20 @@ func (c *Config) Check() error {
 			}
 		}
 	}
+	return nil
+}
+
+func (c *Config) CheckDaemon() error {
+	if c.Daemon.API.Enabled {
+		if c.Daemon.API.Listen != "ipc" {
+			u, err := url.Parse(c.Daemon.API.Listen)
+			if err != nil {
+				return err
+			} else if u.Path != "/" && u.Path != "" {
+				return fmt.Errorf("custom path in URL is not supported. remove '%s' from config", u.Path)
+			}
+		}
+	}
 
 	for _, run := range c.IfileGeneration.Run {
 		if run.Ifile == "" {

@@ -63,7 +63,7 @@ func (v *svice) Start(s service.Service) (err error) {
 			return
 		}
 		v.config.PlaceEnvironmentVariables()
-		err = v.config.Check()
+		err = v.config.CheckDaemon()
 		if err != nil {
 			return
 		}
