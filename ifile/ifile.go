@@ -69,12 +69,12 @@ func New(filePath string, mode Mode, appendToExisting bool, log utils.Logger) (i
 	}
 
 	ifile.flock = flock.New(ifile.filePath)
-	go func() {
+	go func(ifile *Ifile) {
 		time.Sleep(5 * time.Second)
 		if !ifile.flock.Locked() {
 			log.Infof("Waiting to lock file `%s`. Another process holds lock to the file.", ifile.filePath)
 		}
-	}()
+	}(ifile)
 	err = ifile.flock.Lock()
 	if err != nil {
 		return nil, err
