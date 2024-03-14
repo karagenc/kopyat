@@ -76,13 +76,13 @@ func (v *svice) Start(s service.Service) (err error) {
 			return
 		}
 
-		var listen func() error
-		v.e, v.s, listen, err = v.newAPIServer()
-		if err != nil {
-			return
-		}
-
 		if v.config.Daemon.API.Enabled {
+			var listen func() error
+			v.e, v.s, listen, err = v.newAPIServer()
+			if err != nil {
+				return
+			}
+
 			go func() {
 				err := listen()
 				if err != nil {

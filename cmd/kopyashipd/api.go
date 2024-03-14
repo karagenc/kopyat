@@ -21,15 +21,17 @@ func (v *svice) setupRouter(e *echo.Echo) {
 }
 
 func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() error, err error) {
+	apiConfig := v.config.Daemon.API
 	e = echo.New()
 	s = &http.Server{
 		Handler: e,
 	}
 
-	if v.config.Daemon.API.BasicAuth.Enabled {
+	if apiConfig.BasicAuth.Enabled {
 		e.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
-			if subtle.ConstantTimeCompare([]byte(username), []byte(v.config.Daemon.API.BasicAuth.Username)) == 1 &&
-				subtle.ConstantTimeCompare([]byte(password), []byte(v.config.Daemon.API.BasicAuth.Password)) == 1 {
+			u := subtle.ConstantTimeCompare([]byte(username), []byte(apiConfig.BasicAuth.Username))
+			p := subtle.ConstantTimeCompare([]byte(password), []byte(apiConfig.BasicAuth.Password))
+			if u == 1 && p == 1 {
 				return true, nil
 			}
 			return false, nil
@@ -38,7 +40,7 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 
 	v.setupRouter(e)
 
-	if v.config.Daemon.API.Listen == "ipc" {
+	if apiConfig.Listen == "ipc" {
 		socketPath := filepath.Join(v.cacheDir, "api.socket")
 		os.Remove(socketPath)
 		l, err := net.Listen("unix", socketPath)
@@ -49,7 +51,7 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 		listen = func() error { return s.Serve(l) }
 		return e, s, listen, err
 	} else {
-		u, err := url.Parse(v.config.Daemon.API.Listen)
+		u, err := url.Parse(apiConfig.Listen)
 		if err != nil {
 			return nil, nil, nil, err
 		} else if u.Path != "/" && u.Path != "" {
@@ -65,7 +67,7 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 			s.Addr = u.Hostname() + ":" + port
 			v.log.Sugar().Infof("Listening on: %s://%s:%s", u.Scheme, u.Hostname(), port)
 
-			listen = func() error { return s.ListenAndServeTLS(v.config.Daemon.API.Cert, v.config.Daemon.API.Key) }
+			listen = func() error { return s.ListenAndServeTLS(apiConfig.Cert, apiConfig.Key) }
 			return e, s, listen, nil
 		case "http":
 			port := u.Port()

@@ -21,11 +21,13 @@ type httpClient struct {
 
 func newHTTPClient() (*httpClient, error) {
 	listen := config.Daemon.API.Listen
+	basicAuthConfig := config.Daemon.API.BasicAuth
 
 	basicAuth := func() func() string {
-		if config.Daemon.API.BasicAuth.Enabled {
-			username := config.Daemon.API.BasicAuth.Username
-			password := config.Daemon.API.BasicAuth.Password
+
+		if basicAuthConfig.Enabled {
+			username := basicAuthConfig.Username
+			password := basicAuthConfig.Password
 			return func() string {
 				auth := username + ":" + password
 				return base64.StdEncoding.EncodeToString([]byte(auth))
