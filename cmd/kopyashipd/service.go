@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -21,7 +22,6 @@ import (
 	_config "github.com/tomruk/kopyaship/config"
 	"github.com/tomruk/kopyaship/ifile"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 type svice struct {
@@ -173,49 +173,6 @@ func (v *svice) initLock() error {
 		return err
 	}
 	return nil
-}
-
-func (v *svice) newLogger(debug bool) (*zap.Logger, *logger, error) {
-	development := false
-	level := zap.NewAtomicLevelAt(zap.InfoLevel)
-	if debug {
-		level = zap.NewAtomicLevelAt(zap.DebugLevel)
-		development = true
-	}
-
-	outputPaths := []string{"stdout"}
-	if v.config.Daemon.Log != "" {
-		outputPaths = append(outputPaths, v.config.Daemon.Log)
-	}
-
-	logConfig := &zap.Config{
-		Encoding:    "json",
-		Level:       level,
-		Development: development,
-		Sampling: &zap.SamplingConfig{
-			Initial:    100,
-			Thereafter: 100,
-		},
-		OutputPaths: outputPaths,
-		EncoderConfig: zapcore.EncoderConfig{
-			NameKey:       "logger",
-			TimeKey:       "ts",
-			LevelKey:      "level",
-			CallerKey:     "caller",
-			FunctionKey:   "func",
-			MessageKey:    "msg",
-			StacktraceKey: "stacktrace",
-			LineEnding:    zapcore.DefaultLineEnding,
-			EncodeLevel:   zapcore.LowercaseLevelEncoder,
-			EncodeTime:    zapcore.EpochTimeEncoder,
-			// EncodeTime: zapcore.TimeEncoderOfLayout(""),
-			EncodeDuration: zapcore.SecondsDurationEncoder,
-			EncodeCaller:   zapcore.ShortCallerEncoder,
-		},
-	}
-
-	l, err := logConfig.Build()
-	return l, newLogger(l), err
 }
 
 func (v *svice) Stop(s service.Service) (err error) {
