@@ -95,6 +95,10 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 }
 
 func (c *Config) PlaceEnvironmentVariables() {
+	if runtime.GOOS == "windows" {
+		os.Setenv("HOME", os.Getenv("USERPROFILE"))
+	}
+
 	replace := func(r *string) { *r = os.ExpandEnv(*r) }
 
 	for key, value := range c.Env {
