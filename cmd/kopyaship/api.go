@@ -8,8 +8,12 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
+
+	"github.com/tomruk/kopyaship/utils"
 )
 
 type httpClient struct {
@@ -37,6 +41,20 @@ func newHTTPClient() (*httpClient, error) {
 				return nil
 			}
 			hc.Client.CheckRedirect = redirectPolicyFunc
+		}
+	}
+
+	if listen == "ipc" && runtime.GOOS == "windows" {
+		_, err := net.Listen("unix", "C:\\tmp.socket")
+		if err != nil {
+			opErr, ok := err.(*net.OpError)
+			if ok {
+				_, ok := opErr.Unwrap().(*os.SyscallError)
+				if ok {
+					listen = "http://" + utils.APIFallbackAddr
+					fmt.Println("Listen changed:", listen)
+				}
+			}
 		}
 	}
 

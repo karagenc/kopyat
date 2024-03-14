@@ -12,6 +12,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 func (v *svice) setupRouter(e *echo.Echo) {
@@ -45,7 +46,6 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 		socketPath := filepath.Join(v.cacheDir, "api.socket")
 		os.Remove(socketPath)
 		listeningOn := " unix socket: " + socketPath
-		const apiFallbackAddr = "127.0.0.1:56792"
 
 		l, err := net.Listen("unix", socketPath)
 		if err != nil && runtime.GOOS == "windows" {
@@ -53,8 +53,8 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 			if ok {
 				_, ok := opErr.Unwrap().(*os.SyscallError)
 				if ok {
-					l, err = net.Listen("tcp", apiFallbackAddr)
-					listeningOn = ": http://" + apiFallbackAddr
+					l, err = net.Listen("tcp", utils.APIFallbackAddr)
+					listeningOn = ": http://" + utils.APIFallbackAddr
 				}
 			}
 		}
