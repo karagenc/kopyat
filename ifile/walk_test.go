@@ -66,9 +66,60 @@ func TestSyncthingWalkNoRootMatchesInCurrentProject(t *testing.T) {
 	}
 }
 
+func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
+	os.Remove("test_ifile")
+	i, err := New("test_ifile", ModeSyncthing, true, utils.NewCLILogger())
+	if err != nil {
+		require.NoError(t, err)
+	}
+
+	path, err := filepath.Abs("..")
+	require.NoError(t, err)
+
+	err = i.Walk(path)
+	require.NoError(t, err)
+	err = i.Close()
+	require.NoError(t, err)
+
+	i, err = New("test_ifile", ModeSyncthing, true, utils.NewCLILogger())
+	if err != nil {
+		require.NoError(t, err)
+	}
+
+	err = i.Walk(path)
+	require.NoError(t, err)
+	err = i.Close()
+	require.NoError(t, err)
+
+	content, err := os.ReadFile("test_ifile")
+	require.NoError(t, err)
+
+	found1 := true
+	found2 := true
+	for _, line := range strings.Split(string(content), "\n") {
+		find1 := filepath.Join(path, "cmd/kopyaship/watch.go")
+		if line == find1 {
+			if found1 {
+				t.Fatalf("this occurs more than once: %s", find1)
+			}
+			found1 = true
+		}
+		find2 := filepath.Join(path, "README.md")
+		if line == find2 {
+			if found2 {
+				t.Fatalf("this occurs more than once: %s", find2)
+			}
+			found2 = true
+		}
+	}
+
+	require.True(t, found1)
+	require.True(t, found2)
+}
+
 func TestResticWalkInCurrentProject(t *testing.T) {
 	os.Remove("test_ifile")
-	i, err := New("test_ifile", ModeRestic, true, utils.NewCLILogger())
+	i, err := New("test_ifile", ModeRestic, false, utils.NewCLILogger())
 	if err != nil {
 		require.NoError(t, err)
 	}
