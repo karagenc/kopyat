@@ -44,6 +44,8 @@ func newHTTPClient() (*httpClient, error) {
 		}
 	}
 
+	// Unix socket is supported with Windows 10 Insider Build 17063 and later.
+	// For older versions, fall back to HTTP.
 	if listen == "ipc" && runtime.GOOS == "windows" {
 		tempSocketFile := "C:\\kopyaship_tmp_" + utils.RandString(5) + ".socket"
 		defer os.Remove(tempSocketFile)
@@ -54,7 +56,6 @@ func newHTTPClient() (*httpClient, error) {
 				_, ok := opErr.Unwrap().(*os.SyscallError)
 				if ok {
 					listen = "http://" + utils.APIFallbackAddr
-					fmt.Println("Listen changed:", listen)
 				}
 			}
 		}

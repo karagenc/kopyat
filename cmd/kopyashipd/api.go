@@ -48,6 +48,8 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 		listeningOn := " unix socket: " + socketPath
 
 		l, err := net.Listen("unix", socketPath)
+		// Unix socket is supported with Windows 10 Insider Build 17063 and later.
+		// For older versions, fall back to HTTP.
 		if err != nil && runtime.GOOS == "windows" {
 			opErr, ok := err.(*net.OpError)
 			if ok {
