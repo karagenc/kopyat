@@ -38,7 +38,7 @@ type svice struct {
 	v        *viper.Viper
 	lock     *flock.Flock
 	log      *zap.Logger
-	_logger  *logger
+	_log     *logger
 
 	once    sync.Once
 	errChan <-chan error
@@ -71,7 +71,7 @@ func (v *svice) Start(s service.Service) (err error) {
 		if err != nil {
 			return
 		}
-		v.log, v._logger, err = v.newLogger(false)
+		v.log, v._log, err = v.newLogger(false)
 		if err != nil {
 			return
 		}

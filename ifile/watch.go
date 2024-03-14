@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"go.uber.org/zap"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 type (
 	WatchJob struct {
-		log     *zap.Logger
+		log     utils.Logger
 		status  atomic.Int32
 		stopped chan struct{}
 		errs    chan error
@@ -57,7 +57,7 @@ func (s WatchJobStatus) String() string {
 	}
 }
 
-func NewWatchJob(log *zap.Logger, scanPath, ifile string, mode Mode) *WatchJob {
+func NewWatchJob(log utils.Logger, scanPath, ifile string, mode Mode) *WatchJob {
 	j := &WatchJob{
 		log:      log,
 		status:   atomic.Int32{},
@@ -165,13 +165,13 @@ func (j *WatchJob) logError(err error) {
 
 func (j *WatchJob) sleepBeforeRetry(seconds time.Duration) {
 	time.Sleep(seconds * time.Second)
-	j.log.Sugar().Info("retry in %d second(s)", seconds)
+	j.log.Info("retry in %d second(s)", seconds)
 }
 
 func (j *WatchJob) fail() { j.status.Store(int32(WatchJobStatusFailed)) }
 
 func (j *WatchJob) walk() error {
-	i, err := New(j.ifile, j.mode, true, false)
+	i, err := New(j.ifile, j.mode, true, j.log)
 	if err != nil {
 		return err
 	}

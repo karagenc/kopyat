@@ -16,6 +16,7 @@ var (
 	cacheDir string
 	config   *_config.Config
 	v        *viper.Viper
+	log      = newLogger()
 
 	rootCmd = &cobra.Command{Use: "kopyaship"}
 )

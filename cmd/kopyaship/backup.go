@@ -25,7 +25,7 @@ var backupCmd = &cobra.Command{
 			postHookFail = false
 		)
 
-		backups, err := backup.FromConfig(config, cacheDir, true)
+		backups, err := backup.FromConfig(config, cacheDir, log, false)
 		if err != nil {
 			exit(err)
 		}

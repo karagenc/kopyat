@@ -5,16 +5,17 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/tomruk/kopyaship/utils"
 )
 
 type paths struct {
-	backup *Backup
-	// Not to be confused with Base:
-	// This is kopyaship's base directory.
+	log      utils.Logger
 	cacheDir string
 
-	base  string
-	paths []string
+	backup *Backup
+	base   string
+	paths  []string
 }
 
 func (p *paths) Paths() []string { return p.paths }

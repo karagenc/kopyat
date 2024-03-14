@@ -33,7 +33,7 @@ func (v *svice) initWatchJobsFromConfig() (jobs []*ifile.WatchJob, err error) {
 			}
 			return nil, fmt.Errorf("invalid ifile mode: %s", run.Mode)
 		}
-		j := ifile.NewWatchJob(v.log, run.ScanPath, run.Ifile, mode)
+		j := ifile.NewWatchJob(v._log, run.ScanPath, run.Ifile, mode)
 		jobs = append(jobs, j)
 		v.jobsMu.Lock()
 		v.watchJobs = append(v.watchJobs, j)

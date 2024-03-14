@@ -6,23 +6,25 @@ import (
 	"os/exec"
 
 	"github.com/mattn/go-shellwords"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 type Restic struct {
 	repoPath  string
 	extraArgs string
 	sudo      bool
-	shell     bool
 	password  string
+
+	log utils.Logger
 }
 
-func NewRestic(repoPath, extraArgs, password string, sudo, shell bool) *Restic {
+func NewRestic(repoPath, extraArgs, password string, sudo bool, log utils.Logger) *Restic {
 	return &Restic{
 		repoPath:  repoPath,
 		extraArgs: extraArgs,
 		sudo:      sudo,
-		shell:     shell,
 		password:  password,
+		log:       log,
 	}
 }
 
@@ -61,9 +63,7 @@ func (r *Restic) run(command string) error {
 	if r.sudo {
 		command = "sudo " + command
 	}
-	if r.shell {
-		fmt.Printf("Running: %s\n", command)
-	}
+	r.log.Infof("Running: %s\n", command)
 	if r.password != "" {
 		os.Setenv("RESTIC_PASSWORD", r.password)
 		defer os.Unsetenv("RESTIC_PASSWORD")

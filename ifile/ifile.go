@@ -11,6 +11,7 @@ import (
 
 	"github.com/gofrs/flock"
 	pathspec "github.com/shibumi/go-pathspec"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 type (
@@ -52,7 +53,7 @@ const (
 	endIndicator   = "# I_END"
 )
 
-func New(filePath string, mode Mode, appendToExisting, shell bool) (ifile *Ifile, err error) {
+func New(filePath string, mode Mode, appendToExisting bool, log utils.Logger) (ifile *Ifile, err error) {
 	ifile = &Ifile{
 		mode:     mode,
 		filePath: filePath,
@@ -68,14 +69,12 @@ func New(filePath string, mode Mode, appendToExisting, shell bool) (ifile *Ifile
 	}
 
 	ifile.flock = flock.New(ifile.filePath)
-	if shell {
-		go func() {
-			time.Sleep(5 * time.Second)
-			if !ifile.flock.Locked() {
-				fmt.Printf("Waiting to lock file `%s`. Another process holds lock to the file.", ifile.filePath)
-			}
-		}()
-	}
+	go func() {
+		time.Sleep(5 * time.Second)
+		if !ifile.flock.Locked() {
+			log.Infof("Waiting to lock file `%s`. Another process holds lock to the file.", ifile.filePath)
+		}
+	}()
 	err = ifile.flock.Lock()
 	if err != nil {
 		return nil, err

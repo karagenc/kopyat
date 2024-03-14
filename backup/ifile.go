@@ -12,10 +12,10 @@ func (p *paths) ifilePath() string {
 	return filepath.Join(p.cacheDir, p.backup.Name+".list")
 }
 
-func (p *paths) generateIfile(shell bool) error {
+func (p *paths) generateIfile() error {
 	g, _ := errgroup.WithContext(context.Background())
 
-	i, err := ifile.New(p.ifilePath(), ifile.Include, false, shell)
+	i, err := ifile.New(p.ifilePath(), ifile.Include, false, p.log)
 	if err != nil {
 		return err
 	}
