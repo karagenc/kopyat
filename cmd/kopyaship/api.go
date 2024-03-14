@@ -45,7 +45,7 @@ func newHTTPClient() (*httpClient, error) {
 	}
 
 	if listen == "ipc" && runtime.GOOS == "windows" {
-		_, err := net.Listen("unix", "C:\\tmp.socket")
+		_, err := net.Listen("unix", "C:\\kopyaship_tmp.socket")
 		if err != nil {
 			opErr, ok := err.(*net.OpError)
 			if ok {
