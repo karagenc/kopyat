@@ -9,6 +9,8 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/tomruk/kopyaship/utils"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type (
@@ -79,6 +81,8 @@ func (j *WatchJob) Status() WatchJobStatus { return WatchJobStatus(j.status.Load
 
 func (j *WatchJob) Errors() <-chan error { return j.errs }
 
+var titleCaser = cases.Title(language.AmericanEnglish)
+
 func (j *WatchJob) Info() *WatchJobInfo {
 	errs := make([]error, 0, len(j.errs))
 	for i := 0; i < len(errs); i++ {
@@ -89,19 +93,11 @@ func (j *WatchJob) Info() *WatchJobInfo {
 		}
 	}
 
-	mode := ""
-	switch j.mode {
-	case ModeRestic:
-		mode = "include"
-	case ModeSyncthing:
-		mode = "ignore"
-	}
-
 	return &WatchJobInfo{
 		ScanPath: j.scanPath,
 		Ifile:    j.ifile,
 		Errors:   errs,
-		Mode:     mode,
+		Mode:     titleCaser.String(j.mode.String()),
 	}
 }
 
