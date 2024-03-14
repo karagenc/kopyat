@@ -10,13 +10,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	_config "github.com/tomruk/kopyaship/config"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 var (
 	cacheDir string
 	config   *_config.Config
 	v        *viper.Viper
-	log      = newLogger()
+	log      = utils.NewCLILogger()
 
 	rootCmd = &cobra.Command{Use: "kopyaship"}
 )
