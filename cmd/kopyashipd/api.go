@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -43,11 +44,25 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 	if apiConfig.Listen == "ipc" {
 		socketPath := filepath.Join(v.cacheDir, "api.socket")
 		os.Remove(socketPath)
+		listeningOn := " unix socket: " + socketPath
+		const apiFallbackAddr = "127.0.0.1:56792"
+
 		l, err := net.Listen("unix", socketPath)
+		if err != nil && runtime.GOOS == "windows" {
+			opErr, ok := err.(*net.OpError)
+			if ok {
+				_, ok := opErr.Unwrap().(*os.SyscallError)
+				if ok {
+					l, err = net.Listen("tcp", apiFallbackAddr)
+					listeningOn = ": http://" + apiFallbackAddr
+				}
+			}
+		}
 		if err != nil {
 			return nil, nil, nil, err
 		}
-		v.log.Sugar().Infof("Listening on unix socket: %s", socketPath)
+
+		v.log.Sugar().Infof("Listening on%s", listeningOn)
 		listen = func() error { return s.Serve(l) }
 		return e, s, listen, err
 	} else {
