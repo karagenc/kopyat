@@ -157,7 +157,9 @@ func (v *svice) initLock() error {
 	if err != nil {
 		return err
 	}
-	lockFile := filepath.Join(v.cacheDir, "kopyashipd_"+user.Username+".lock")
+	username := user.Username
+	username = strings.ReplaceAll(username, "\\", "_")
+	lockFile := filepath.Join(v.cacheDir, "kopyashipd_"+username+".lock")
 	v.lock = flock.New(lockFile)
 
 	go func() {
