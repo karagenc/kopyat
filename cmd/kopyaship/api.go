@@ -2,21 +2,38 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"strings"
 )
 
 type httpClient struct {
 	*http.Client
 	u *url.URL
+
+	basicAuth func() string
 }
 
 func newHTTPClient() (*httpClient, error) {
 	listen := config.Daemon.API.Listen
+
+	basicAuth := func() func() string {
+		if config.Daemon.API.BasicAuth.Enabled {
+			username := config.Daemon.API.BasicAuth.Username
+			password := config.Daemon.API.BasicAuth.Password
+			return func() string {
+				auth := username + ":" + password
+				return base64.StdEncoding.EncodeToString([]byte(auth))
+			}
+		}
+		return nil
+	}
+
 	if listen == "ipc" {
 		client := &http.Client{
 			Transport: &http.Transport{
@@ -27,13 +44,14 @@ func newHTTPClient() (*httpClient, error) {
 				},
 			},
 		}
-		return &httpClient{Client: client}, nil
+		return &httpClient{Client: client, basicAuth: basicAuth()}, nil
 	} else {
 		u, err := url.Parse(listen)
 		if err != nil {
 			return nil, err
 		}
-		return &httpClient{Client: &http.Client{}, u: u}, nil
+		hc := &httpClient{Client: &http.Client{}, u: u, basicAuth: basicAuth()}
+		return hc, nil
 	}
 }
 
@@ -52,10 +70,20 @@ func (hc *httpClient) CloseIdleConnections() {
 }
 
 func (hc *httpClient) NewRequest(method, path string, body io.ReadCloser) (*http.Request, error) {
-	return http.NewRequest(method, hc.url(path), body)
+	req, err := http.NewRequest(method, hc.url(path), body)
+	if err != nil {
+		return nil, err
+	}
+	if hc.basicAuth != nil {
+		req.Header.Set("Authorization", "Basic "+hc.basicAuth())
+	}
+	return req, nil
 }
 
 func (hc *httpClient) Do(req *http.Request) (*http.Response, error) {
+	if hc.basicAuth != nil {
+		req.Header.Set("Authorization", "Basic "+hc.basicAuth())
+	}
 	resp, err := hc.Client.Do(req)
 	if err != nil {
 		return nil, err
@@ -66,7 +94,14 @@ func (hc *httpClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 func (hc *httpClient) Get(path string) (*http.Response, error) {
-	resp, err := hc.Client.Get(hc.url(path))
+	req, err := http.NewRequest("GET", hc.url(path), nil)
+	if err != nil {
+		return nil, err
+	}
+	if hc.basicAuth != nil {
+		req.Header.Set("Authorization", "Basic "+hc.basicAuth())
+	}
+	resp, err := hc.Client.Do(req)
 	if err != nil {
 		return nil, err
 	} else if resp.StatusCode != 200 {
@@ -76,7 +111,14 @@ func (hc *httpClient) Get(path string) (*http.Response, error) {
 }
 
 func (hc *httpClient) Head(path string) (*http.Response, error) {
-	resp, err := hc.Client.Head(hc.url(path))
+	req, err := http.NewRequest("HEAD", hc.url(path), nil)
+	if err != nil {
+		return nil, err
+	}
+	if hc.basicAuth != nil {
+		req.Header.Set("Authorization", "Basic "+hc.basicAuth())
+	}
+	resp, err := hc.Client.Do(req)
 	if err != nil {
 		return nil, err
 	} else if resp.StatusCode != 200 {
@@ -86,7 +128,15 @@ func (hc *httpClient) Head(path string) (*http.Response, error) {
 }
 
 func (hc *httpClient) Post(path string, contentType string, body io.Reader) (*http.Response, error) {
-	resp, err := hc.Client.Post(hc.url(path), contentType, body)
+	req, err := http.NewRequest("POST", hc.url(path), body)
+	if err != nil {
+		return nil, err
+	}
+	if hc.basicAuth != nil {
+		req.Header.Set("Authorization", "Basic "+hc.basicAuth())
+	}
+	req.Header.Set("Content-Type", contentType)
+	resp, err := hc.Client.Do(req)
 	if err != nil {
 		return nil, err
 	} else if resp.StatusCode != 200 {
@@ -96,11 +146,5 @@ func (hc *httpClient) Post(path string, contentType string, body io.Reader) (*ht
 }
 
 func (hc *httpClient) PostForm(path string, data url.Values) (*http.Response, error) {
-	resp, err := hc.Client.PostForm(hc.url(path), data)
-	if err != nil {
-		return nil, err
-	} else if resp.StatusCode != 200 {
-		return resp, fmt.Errorf("non-200 status code received: %s", resp.Status)
-	}
-	return resp, nil
+	return hc.Post(path, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 }

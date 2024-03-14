@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/subtle"
 	"fmt"
 	"net"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func (v *svice) setupRouter(e *echo.Echo) {
@@ -22,6 +24,16 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 	e = echo.New()
 	s = &http.Server{
 		Handler: e,
+	}
+
+	if v.config.Daemon.API.BasicAuth.Enabled {
+		e.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
+			if subtle.ConstantTimeCompare([]byte(username), []byte(v.config.Daemon.API.BasicAuth.Username)) == 1 &&
+				subtle.ConstantTimeCompare([]byte(password), []byte(v.config.Daemon.API.BasicAuth.Password)) == 1 {
+				return true, nil
+			}
+			return false, nil
+		}))
 	}
 
 	v.setupRouter(e)

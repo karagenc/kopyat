@@ -189,6 +189,14 @@ func (c *Config) CheckDaemon() error {
 				return fmt.Errorf("custom path in URL is not supported. remove '%s' from config", u.Path)
 			}
 		}
+		if c.Daemon.API.BasicAuth.Enabled {
+			if c.Daemon.API.BasicAuth.Username == "" {
+				return fmt.Errorf("empty API username. assign a username or disable API in configuration.")
+			}
+			if c.Daemon.API.BasicAuth.Password == "" {
+				return fmt.Errorf("empty API password. assign a password or disable API in configuration.")
+			}
+		}
 	}
 
 	for _, run := range c.IfileGeneration.Run {
