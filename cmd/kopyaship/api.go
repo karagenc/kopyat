@@ -23,17 +23,21 @@ func newHTTPClient() (*httpClient, error) {
 	listen := config.Daemon.API.Listen
 	basicAuthConfig := config.Daemon.API.BasicAuth
 
-	basicAuth := func() func() string {
-
+	setBasicAuth := func(hc *httpClient) {
 		if basicAuthConfig.Enabled {
 			username := basicAuthConfig.Username
 			password := basicAuthConfig.Password
-			return func() string {
+			hc.basicAuth = func() string {
 				auth := username + ":" + password
 				return base64.StdEncoding.EncodeToString([]byte(auth))
 			}
+
+			redirectPolicyFunc := func(req *http.Request, via []*http.Request) error {
+				req.Header.Set("Authorization", "Basic "+hc.basicAuth())
+				return nil
+			}
+			hc.Client.CheckRedirect = redirectPolicyFunc
 		}
-		return nil
 	}
 
 	if listen == "ipc" {
@@ -46,13 +50,16 @@ func newHTTPClient() (*httpClient, error) {
 				},
 			},
 		}
-		return &httpClient{Client: client, basicAuth: basicAuth()}, nil
+		hc := &httpClient{Client: client}
+		setBasicAuth(hc)
+		return hc, nil
 	} else {
 		u, err := url.Parse(listen)
 		if err != nil {
 			return nil, err
 		}
-		hc := &httpClient{Client: &http.Client{}, u: u, basicAuth: basicAuth()}
+		hc := &httpClient{Client: &http.Client{}, u: u}
+		setBasicAuth(hc)
 		return hc, nil
 	}
 }
