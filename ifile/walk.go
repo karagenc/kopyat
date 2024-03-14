@@ -31,6 +31,8 @@ func (i *Ifile) Walk(root string) error {
 				}
 			}
 			return err
+		} else if path == root {
+			return nil
 		}
 
 		t := d.Type()
@@ -41,22 +43,36 @@ func (i *Ifile) Walk(root string) error {
 			}
 		}
 
+		anyMatches := false
 		for j := len(ignorefiles) - 1; j >= 0; j-- {
-			igf := ignorefiles[j]
+			igFile := ignorefiles[j]
 
-			if strings.HasPrefix(path, igf.dir) {
-				trimmed := path[len(igf.dir):]
+			if strings.HasPrefix(path, igFile.dir) {
+				trimmed := path[len(igFile.dir):]
 				if t.IsDir() && !strings.HasSuffix(trimmed, "/") {
 					trimmed += "/"
 				}
-				match := igf.p.Match(trimmed)
-				if (match && i.mode == ModeRestic || !match && i.mode == ModeSyncthing) && path != root {
+				match := igFile.p.Match(trimmed)
+
+				if i.mode == ModeRestic && match {
 					if t.IsDir() {
 						return filepath.SkipDir
 					}
 					return nil
 				}
+				if i.mode == ModeSyncthing && match {
+					anyMatches = true
+					path = path[len(igFile.dir):]
+					break
+				}
 			}
+		}
+
+		if i.mode == ModeSyncthing && !anyMatches {
+			if t.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 
 		entries = append(entries, &entry{
