@@ -99,7 +99,10 @@ func (c *Config) PlaceEnvironmentVariables() {
 		os.Setenv("HOME", os.Getenv("USERPROFILE"))
 	}
 
-	replace := func(r *string) { *r = os.ExpandEnv(*r) }
+	replace := func(r *string) {
+		*r = os.ExpandEnv(*r)
+		*r = filepath.ToSlash(*r)
+	}
 
 	for key, value := range c.Env {
 		replace(&value)
