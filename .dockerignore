@@ -1,0 +1,11 @@
+.vscode
+**/__debug_bin*
+*.exe
+/kopyaship
+/kopyaship-*
+/kopyashipd
+/kopyashipd-*
+/kopyashipd.lock
+/kopyaship.yml
+/tmp
+**/test_ifile
