@@ -69,9 +69,6 @@ func (i *Ifile) Walk(root string) error {
 		}
 
 		if i.mode == ModeSyncthing && !anyMatches {
-			if t.IsDir() {
-				return filepath.SkipDir
-			}
 			return nil
 		}
 
