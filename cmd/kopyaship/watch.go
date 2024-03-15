@@ -42,8 +42,15 @@ var (
 				"IFILE", "SCAN PATH", "MODE", "ERRORS",
 			})
 			for _, info := range infos {
+				e := ""
+				for i, err := range info.Errors {
+					e += err
+					if i != len(info.Errors)-1 {
+						e += "\n"
+					}
+				}
 				w.AppendRow(table.Row{
-					info.Ifile, info.ScanPath, info.Mode, info.Errors,
+					info.Ifile, info.ScanPath, info.Mode, e,
 				})
 			}
 			fmt.Println(w.Render())
