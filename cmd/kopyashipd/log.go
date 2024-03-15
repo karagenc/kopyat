@@ -51,7 +51,6 @@ func (v *svice) newLogger(debug bool) (*zap.Logger, *logger, error) {
 			TimeKey:       "ts",
 			LevelKey:      "level",
 			CallerKey:     "caller",
-			FunctionKey:   "func",
 			MessageKey:    "msg",
 			StacktraceKey: "stacktrace",
 			LineEnding:    zapcore.DefaultLineEnding,
