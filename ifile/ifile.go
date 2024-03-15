@@ -83,7 +83,7 @@ func New(filePath string, mode Mode, appendToExisting bool, log utils.Logger) (i
 	go func(ifile *Ifile) {
 		time.Sleep(5 * time.Second)
 		if !ifile.flock.Locked() {
-			log.Infof("Waiting to lock file `%s`. Another process holds lock to the file.", ifile.filePath)
+			log.Warnf("Waiting to lock file `%s`. Another process or goroutine holds lock to the file.", ifile.filePath)
 		}
 	}(ifile)
 	err = ifile.flock.Lock()
