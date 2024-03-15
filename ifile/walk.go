@@ -7,7 +7,7 @@ import (
 	"strings"
 	"syscall"
 
-	pathspec "github.com/shibumi/go-pathspec"
+	pathspec "github.com/tomruk/go-pathspec"
 )
 
 const (

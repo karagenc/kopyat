@@ -2,8 +2,6 @@ module github.com/tomruk/kopyaship
 
 go 1.20
 
-replace github.com/shibumi/go-pathspec v1.3.0 => ../go-pathspec
-
 require (
 	github.com/docker/go-units v0.5.0
 	github.com/fsnotify/fsnotify v1.7.0
@@ -13,11 +11,11 @@ require (
 	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/mattn/go-shellwords v1.0.12
-	github.com/shibumi/go-pathspec v1.3.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.4
+	github.com/tomruk/go-pathspec v0.1.0
 	go.uber.org/zap v1.21.0
 	golang.org/x/sync v0.1.0
 	golang.org/x/text v0.14.0

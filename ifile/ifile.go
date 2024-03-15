@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/gofrs/flock"
-	pathspec "github.com/shibumi/go-pathspec"
+	pathspec "github.com/tomruk/go-pathspec"
 	"github.com/tomruk/kopyaship/utils"
 )
 
