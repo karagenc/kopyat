@@ -8,7 +8,13 @@ kopyaship:
 kopyashipd:
 	go build -ldflags '-s -w' ./cmd/kopyashipd
 
+test:
+	go test -v -buildmode=default -race -short ./...
+
+test-coverage:
+	go test -buildmode=default -short -coverprofile coverage.out -covermode=atomic ./...
+
 install:
 	mv kopyaship kopyashipd $(PREFIX)
 
-.PHONY: help install kopyaship kopyashipd
+.PHONY: kopyaship kopyashipd test test-coverage install
