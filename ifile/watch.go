@@ -28,10 +28,10 @@ type (
 	WatchJobStatus int32
 
 	WatchJobInfo struct {
-		ScanPath string  `json:"scanPath"`
-		Ifile    string  `json:"ifile"`
-		Errors   []error `json:"errors"`
-		Mode     string  `json:"mode"`
+		ScanPath string   `json:"scanPath"`
+		Ifile    string   `json:"ifile"`
+		Errors   []string `json:"errors"`
+		Mode     string   `json:"mode"`
 	}
 )
 
@@ -79,16 +79,14 @@ func (j *WatchJob) Ifile() string { return j.ifile }
 
 func (j *WatchJob) Status() WatchJobStatus { return WatchJobStatus(j.status.Load()) }
 
-func (j *WatchJob) Errors() <-chan error { return j.errs }
-
 var titleCaser = cases.Title(language.AmericanEnglish)
 
 func (j *WatchJob) Info() *WatchJobInfo {
-	errs := make([]error, 0, len(j.errs))
-	for i := 0; i < len(errs); i++ {
+	errs := make([]string, 0, len(j.errs))
+	for len(j.errs) > 0 {
 		select {
 		case err := <-j.errs:
-			errs = append(errs, err)
+			errs = append(errs, err.Error())
 		default:
 		}
 	}
