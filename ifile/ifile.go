@@ -78,18 +78,22 @@ func New(filePath string, mode Mode, appendToExisting bool, log utils.Logger) (i
 	if err != nil {
 		return nil, err
 	}
-
 	ifile.flock = flock.New(ifile.filePath)
-	go func(ifile *Ifile) {
-		time.Sleep(5 * time.Second)
-		if !ifile.flock.Locked() {
+	flockChan := make(chan struct{})
+
+	go func(ifile *Ifile, flockChan <-chan struct{}) {
+		time.Sleep(2 * time.Second)
+		select {
+		case <-flockChan:
+		default:
 			log.Warnf("Waiting to lock file `%s`. Another process or goroutine holds lock to the file.", ifile.filePath)
 		}
-	}(ifile)
+	}(ifile, flockChan)
 	err = ifile.flock.Lock()
 	if err != nil {
 		return nil, err
 	}
+	close(flockChan)
 
 	if appendToExisting {
 		ifile.existing, err = ifile.seekToEnd()
