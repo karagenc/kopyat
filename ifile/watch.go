@@ -101,51 +101,50 @@ func (j *WatchJob) Info() *WatchJobInfo {
 	}
 }
 
-func (j *WatchJob) Start() error {
-	go func() {
-		err := j.walk()
+func (j *WatchJob) Run() error {
+	err := j.walk()
+	if err != nil {
+		j.logError(err)
+		j.fail()
+		return err
+	}
+
+	firstAttempt := time.Now()
+
+outer:
+	for {
+		watcher, c, err := watch(j.scanPath)
 		if err != nil {
 			j.logError(err)
-			j.fail()
-			return
+			j.sleepBeforeRetry(1)
+			if time.Since(firstAttempt).Seconds() >= failAfter {
+				j.fail()
+				return err
+			}
+			continue
 		}
 
-		firstAttempt := time.Now()
+		j.status.Store(int32(WatchJobStatusRunning))
 
-	outer:
 		for {
-			watcher, c, err := watch(j.scanPath)
-			if err != nil {
-				j.logError(err)
-				j.sleepBeforeRetry(1)
-				if time.Since(firstAttempt).Seconds() >= failAfter {
-					j.fail()
-				}
-				continue
-			}
-
-			j.status.Store(int32(WatchJobStatusRunning))
-
-			for {
-				select {
-				case <-c:
-					err := j.walk()
-					if err != nil {
-						j.logError(err)
-						j.sleepBeforeRetry(1)
-						if time.Since(firstAttempt).Seconds() >= failAfter {
-							j.fail()
-						}
-						continue outer
+			select {
+			case <-c:
+				err := j.walk()
+				if err != nil {
+					j.logError(err)
+					j.sleepBeforeRetry(1)
+					if time.Since(firstAttempt).Seconds() >= failAfter {
+						j.fail()
+						return err
 					}
-				case <-j.stopped:
-					watcher.Close()
-					return
+					continue outer
 				}
+			case <-j.stopped:
+				watcher.Close()
+				return nil
 			}
 		}
-	}()
-	return nil
+	}
 }
 
 func (j *WatchJob) logError(err error) {
@@ -175,7 +174,7 @@ func (j *WatchJob) walk() error {
 	return i.Walk(j.scanPath)
 }
 
-func (j *WatchJob) Stop() error {
+func (j *WatchJob) Shutdown() error {
 	close(j.stopped)
 	j.status.Store(int32(WatchJobStatusStopped))
 	return nil

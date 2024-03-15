@@ -102,7 +102,7 @@ func (v *svice) Start(s service.Service) (err error) {
 		}
 		for _, j := range jobs {
 			go func(j *ifile.WatchJob) {
-				err := j.Start()
+				err := j.Run()
 				if err != nil {
 					errChan <- fmt.Errorf("api: %v", err)
 					err := s.Stop()
@@ -196,7 +196,7 @@ func (v *svice) Stop(s service.Service) (err error) {
 	v.jobsMu.Lock()
 	defer v.jobsMu.Unlock()
 	for _, job := range v.watchJobs {
-		jobErr := job.Stop()
+		jobErr := job.Shutdown()
 		if err == nil && jobErr != nil {
 			err = jobErr
 		}
