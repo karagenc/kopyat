@@ -62,7 +62,7 @@ func (i *Ifile) Walk(root string) error {
 				}
 				if i.mode == ModeSyncthing && match {
 					anyMatches = true
-					path = path[len(igFile.dir):]
+					path = path[len(root):]
 					break
 				}
 			}
