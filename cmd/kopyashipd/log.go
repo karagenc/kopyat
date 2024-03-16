@@ -106,3 +106,12 @@ func (l *logger) Errorf(format string, a ...any) {
 }
 
 func (l *logger) Errorln(a ...any) { l.s.Error(a...) }
+
+func (l *logger) Debug(a ...any) { l.s.Debug(a...) }
+
+func (l *logger) Debugf(format string, a ...any) {
+	l.removeNewLine(&format)
+	l.s.Debugf(format, a...)
+}
+
+func (l *logger) Debugln(a ...any) { l.s.Debug(a...) }

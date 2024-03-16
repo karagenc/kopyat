@@ -17,6 +17,10 @@ type Logger interface {
 	Error(a ...any)
 	Errorf(format string, a ...any)
 	Errorln(a ...any)
+
+	Debug(a ...any)
+	Debugf(format string, a ...any)
+	Debugln(a ...any)
 }
 
 // Logs to stdout and stderr.
@@ -42,3 +46,16 @@ func (l *cliLogger) Error(a ...any) { fmt.Fprint(os.Stderr, a...) }
 func (l *cliLogger) Errorf(format string, a ...any) { fmt.Fprintf(os.Stderr, format, a...) }
 
 func (l *cliLogger) Errorln(a ...any) { fmt.Fprintln(os.Stderr, a...) }
+
+func (l *cliLogger) Debug(a ...any) {
+	a = append([]any{"debug:"}, a...)
+	fmt.Fprint(os.Stderr, a...)
+}
+
+func (l *cliLogger) Debugf(format string, a ...any) { fmt.Fprintf(os.Stderr, "debug: "+format, a...) }
+
+func (l *cliLogger) Debugln(a ...any) {
+	a = append([]any{"debug:"}, a...)
+	fmt.Fprintln(os.Stderr, a...)
+
+}
