@@ -24,10 +24,14 @@ type Logger interface {
 }
 
 // Logs to stdout and stderr.
-type cliLogger struct{}
+type cliLogger struct {
+	enableDebugLevel bool
+}
 
 // cliLogger logs to stdout and stderr.
-func NewCLILogger() Logger { return &cliLogger{} }
+func NewCLILogger(enableDebugLevel bool) Logger {
+	return &cliLogger{enableDebugLevel: enableDebugLevel}
+}
 
 func (l *cliLogger) Info(a ...any) { fmt.Print(a...) }
 
@@ -48,14 +52,21 @@ func (l *cliLogger) Errorf(format string, a ...any) { fmt.Fprintf(os.Stderr, for
 func (l *cliLogger) Errorln(a ...any) { fmt.Fprintln(os.Stderr, a...) }
 
 func (l *cliLogger) Debug(a ...any) {
-	a = append([]any{"debug:"}, a...)
-	fmt.Fprint(os.Stderr, a...)
+	if l.enableDebugLevel {
+		a = append([]any{"debug:"}, a...)
+		fmt.Fprint(os.Stderr, a...)
+	}
 }
 
-func (l *cliLogger) Debugf(format string, a ...any) { fmt.Fprintf(os.Stderr, "debug: "+format, a...) }
+func (l *cliLogger) Debugf(format string, a ...any) {
+	if l.enableDebugLevel {
+		fmt.Fprintf(os.Stderr, "debug: "+format, a...)
+	}
+}
 
 func (l *cliLogger) Debugln(a ...any) {
-	a = append([]any{"debug:"}, a...)
-	fmt.Fprintln(os.Stderr, a...)
-
+	if l.enableDebugLevel {
+		a = append([]any{"debug:"}, a...)
+		fmt.Fprintln(os.Stderr, a...)
+	}
 }

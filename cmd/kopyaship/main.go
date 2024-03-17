@@ -17,7 +17,7 @@ var (
 	cacheDir string
 	config   *_config.Config
 	v        *viper.Viper
-	log      = utils.NewCLILogger()
+	log      = utils.NewCLILogger(false)
 
 	rootCmd = &cobra.Command{Use: "kopyaship"}
 )

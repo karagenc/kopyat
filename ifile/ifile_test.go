@@ -20,7 +20,7 @@ func TestIfileOverwrite(t *testing.T) {
 	))
 
 	os.Remove("test_ifile")
-	i, err := New("test_ifile", ModeSyncthing, false, utils.NewCLILogger())
+	i, err := New("test_ifile", ModeSyncthing, false, utils.NewCLILogger(true))
 	require.NoError(t, err)
 
 	path, err := filepath.Abs("..")
@@ -35,7 +35,7 @@ func TestIfileOverwrite(t *testing.T) {
 
 	require.True(t, ifileFormRe.Match(content))
 
-	i, err = New("test_ifile", ModeSyncthing, false, utils.NewCLILogger())
+	i, err = New("test_ifile", ModeSyncthing, false, utils.NewCLILogger(true))
 	require.NoError(t, err)
 	err = i.Walk(path)
 	require.NoError(t, err)
@@ -64,7 +64,7 @@ func TestIfileAppend(t *testing.T) {
 	err := os.WriteFile("test_ifile", content, 0644)
 	require.NoError(t, err)
 
-	i, err := New("test_ifile", ModeSyncthing, true, utils.NewCLILogger())
+	i, err := New("test_ifile", ModeSyncthing, true, utils.NewCLILogger(true))
 	require.NoError(t, err)
 
 	path, err := filepath.Abs("..")
@@ -79,7 +79,7 @@ func TestIfileAppend(t *testing.T) {
 
 	require.True(t, ifileFormRe.Match(content))
 
-	i, err = New("test_ifile", ModeSyncthing, true, utils.NewCLILogger())
+	i, err = New("test_ifile", ModeSyncthing, true, utils.NewCLILogger(true))
 	require.NoError(t, err)
 	err = i.Walk(path)
 	require.NoError(t, err)
@@ -120,7 +120,7 @@ func TestIfileAppend2(t *testing.T) {
 	err := os.WriteFile("test_ifile", []byte(contentStart+contentMiddle+contentEnd), 0644)
 	require.NoError(t, err)
 
-	i, err := New("test_ifile", ModeSyncthing, true, utils.NewCLILogger())
+	i, err := New("test_ifile", ModeSyncthing, true, utils.NewCLILogger(true))
 	require.NoError(t, err)
 
 	path, err := filepath.Abs("..")
@@ -135,7 +135,7 @@ func TestIfileAppend2(t *testing.T) {
 
 	require.True(t, ifileFormRe.Match(content))
 
-	i, err = New("test_ifile", ModeSyncthing, true, utils.NewCLILogger())
+	i, err = New("test_ifile", ModeSyncthing, true, utils.NewCLILogger(true))
 	require.NoError(t, err)
 	err = i.Walk(path)
 	require.NoError(t, err)

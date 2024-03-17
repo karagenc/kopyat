@@ -21,7 +21,7 @@ func TestWatch(t *testing.T) {
 
 	path, err := filepath.Abs("..")
 	require.NoError(t, err)
-	j := NewWatchJob(utils.NewCLILogger(), path, "test_ifile", ModeSyncthing)
+	j := NewWatchJob(utils.NewCLILogger(true), path, "test_ifile", ModeSyncthing)
 
 	var (
 		walk      = j.walk
@@ -93,7 +93,7 @@ func TestWatchIgnore(t *testing.T) {
 
 	path, err := filepath.Abs("..")
 	require.NoError(t, err)
-	j := NewWatchJob(utils.NewCLILogger(), path, "test_ifile", ModeSyncthing)
+	j := NewWatchJob(utils.NewCLILogger(true), path, "test_ifile", ModeSyncthing)
 
 	var (
 		walk      = j.walk

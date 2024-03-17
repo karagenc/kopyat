@@ -137,7 +137,8 @@ outer:
 
 		for {
 			select {
-			case <-c:
+			case path := <-c:
+				j.log.Debugf("event received. path: %s\n", path)
 				err := j.walk()
 				if err != nil {
 					j.logError(err)
