@@ -16,7 +16,6 @@ func TestWatch(t *testing.T) {
 	os.Remove("test_ifile")
 	os.Remove("test_txtfile")
 
-	defer os.Remove("test_ifile")
 	defer os.Remove("test_txtfile")
 
 	path, err := filepath.Abs("..")
@@ -87,7 +86,6 @@ func TestWatchIgnore(t *testing.T) {
 	os.Remove("test_txtfile")
 	os.Remove(".gitignore")
 
-	defer os.Remove("test_ifile")
 	defer os.Remove("test_txtfile")
 	defer os.Remove(".gitignore")
 
