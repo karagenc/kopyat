@@ -18,22 +18,22 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			hc, err := newHTTPClient()
 			if err != nil {
-				exit(err)
+				exit(err, nil)
 			}
 			resp, err := hc.Get("/jobs/watch")
 			if err != nil {
-				exit(err)
+				exit(err, nil)
 			}
 			defer resp.Body.Close()
 			content, err := io.ReadAll(resp.Body)
 			if err != nil {
-				exit(err)
+				exit(err, nil)
 			}
 
 			var infos []*ifile.WatchJobInfo
 			err = json.Unmarshal(content, &infos)
 			if err != nil {
-				exit(err)
+				exit(err, nil)
 			}
 
 			fmt.Println()

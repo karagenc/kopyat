@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"syscall"
 
 	"github.com/kirsle/configdir"
@@ -39,12 +40,13 @@ func init() {
 			case syscall.SIGINT:
 				for {
 					r := bufio.NewReader(os.Stdin)
-					fmt.Print("Are you sure (y/N): ")
+					fmt.Print("Are you sure you want to exit? (y/N): ")
 					input, _ := r.ReadString('\n')
 					input = strings.TrimSpace(input)
 
 					if strings.EqualFold(input, "y") {
-						utils.Exit(2)
+						code := 2
+						exit(nil, &code)
 					} else if strings.EqualFold(input, "n") {
 						break
 					} else {
@@ -52,7 +54,8 @@ func init() {
 					}
 				}
 			case syscall.SIGTERM:
-				utils.Exit(3)
+				code := 2
+				exit(nil, &code)
 			}
 		}
 	}()
@@ -72,7 +75,7 @@ func init() {
 		config.PlaceEnvironmentVariables()
 		err := config.Check()
 		if err != nil {
-			exit(err)
+			exit(err, nil)
 		}
 	})
 }
@@ -84,11 +87,11 @@ func initConfig() (systemWide bool) {
 	)
 	config, v, systemWide, err = _config.Read(configFile)
 	if err != nil {
-		exit(err)
+		exit(err, nil)
 	}
 	err = os.Chdir(filepath.Dir(v.ConfigFileUsed()))
 	if err != nil {
-		exit(err)
+		exit(err, nil)
 	}
 	return
 }
@@ -110,15 +113,40 @@ func initCache(systemWide bool) {
 	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
 		err = os.MkdirAll(cacheDir, 0755)
 		if err != nil {
-			exit(fmt.Errorf("could not create the cache directory: %v", err))
+			exit(fmt.Errorf("could not create the cache directory: %v", err), nil)
 		}
 	}
 }
 
-func exit(err error) {
+var (
+	exitFuncs   []func()
+	exitFuncsMu sync.Mutex
+)
+
+func addExitHandler(f func()) {
+	exitFuncsMu.Lock()
+	exitFuncs = append(exitFuncs, f)
+	exitFuncsMu.Unlock()
+}
+
+func exit(err error, code *int) {
+	exitFuncsMu.Lock()
+	exitFuncs := exitFuncs
+	exitFuncsMu.Unlock()
+	for _, f := range exitFuncs {
+		f()
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		utils.Exit(1)
+		if code != nil {
+			os.Exit(*code)
+		} else {
+			os.Exit(1)
+		}
 	}
-	utils.Exit(0)
+	if code != nil {
+		os.Exit(*code)
+	} else {
+		os.Exit(0)
+	}
 }

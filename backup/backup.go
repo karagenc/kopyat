@@ -2,6 +2,7 @@ package backup
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"runtime"
@@ -30,14 +31,14 @@ type (
 	}
 )
 
-func FromConfig(config *config.Config, cacheDir string, log utils.Logger, isDaemon bool) (backups Backups, err error) {
+func FromConfig(ctx context.Context, config *config.Config, cacheDir string, log utils.Logger, isDaemon bool) (backups Backups, err error) {
 	backups = make(Backups)
 
 	for _, backupConfig := range config.Backups.Run {
 		if strings.TrimSpace(backupConfig.Name) == "" {
 			return nil, fmt.Errorf("no name given to the backup configuration")
 		}
-		backup, skip, err := fromConfig(backupConfig, cacheDir, log, isDaemon)
+		backup, skip, err := fromConfig(ctx, backupConfig, cacheDir, log, isDaemon)
 		if skip {
 			continue
 		}
@@ -49,11 +50,11 @@ func FromConfig(config *config.Config, cacheDir string, log utils.Logger, isDaem
 	return
 }
 
-func fromConfig(backupConfig *config.Backup, cacheDir string, log utils.Logger, isDaemon bool) (backup *Backup, skip bool, err error) {
+func fromConfig(ctx context.Context, backupConfig *config.Backup, cacheDir string, log utils.Logger, isDaemon bool) (backup *Backup, skip bool, err error) {
 	backup = &Backup{
 		isDaemon:      isDaemon,
 		Name:          backupConfig.Name,
-		Provider:      provider.NewRestic(backupConfig.Restic.Repo, backupConfig.Restic.ExtraArgs, backupConfig.Restic.Password, backupConfig.Restic.Sudo, log),
+		Provider:      provider.NewRestic(ctx, backupConfig.Restic.Repo, backupConfig.Restic.ExtraArgs, backupConfig.Restic.Password, backupConfig.Restic.Sudo, log),
 		GenerateIfile: backupConfig.IfileGeneration,
 		IfOSIs:        backupConfig.Filter.IfOSIs,
 	}
@@ -120,7 +121,7 @@ func (backup *Backup) Do() error {
 		}
 	} else {
 		err := backup.Paths.generateIfile()
-		defer os.Remove(backup.Paths.ifilePath())
+		//defer os.Remove(backup.Paths.ifilePath())
 		if err != nil {
 			return err
 		}

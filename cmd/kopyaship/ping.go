@@ -12,7 +12,7 @@ var pingCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := ping()
 		if err != nil {
-			exit(err)
+			exit(err, nil)
 		}
 		fmt.Println("Pong!")
 	},

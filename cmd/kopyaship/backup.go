@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 
@@ -25,9 +26,11 @@ var backupCmd = &cobra.Command{
 			postHookFail = false
 		)
 
-		backups, err := backup.FromConfig(config, cacheDir, log, false)
+		ctx, cancel := context.WithCancel(context.Background())
+		addExitHandler(cancel)
+		backups, err := backup.FromConfig(ctx, config, cacheDir, log, false)
 		if err != nil {
-			exit(err)
+			exit(err, nil)
 		}
 
 		if !noRemind {
@@ -52,7 +55,7 @@ var backupCmd = &cobra.Command{
 				fmt.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
 				err := runHook(hook)
 				if err != nil {
-					exit(fmt.Errorf("pre hook failed: %v: exiting.", err))
+					exit(fmt.Errorf("pre hook failed: %v: exiting.", err), nil)
 				}
 			}
 
@@ -61,7 +64,7 @@ var backupCmd = &cobra.Command{
 		for _, backup := range backups {
 			err = backup.Do()
 			if err != nil {
-				exit(err)
+				exit(err, nil)
 			}
 		}
 

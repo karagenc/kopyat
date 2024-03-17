@@ -12,21 +12,23 @@ import (
 )
 
 type Restic struct {
+	ctx context.Context
+	log utils.Logger
+
 	repoPath  string
 	extraArgs string
 	sudo      bool
 	password  string
-
-	log utils.Logger
 }
 
-func NewRestic(repoPath, extraArgs, password string, sudo bool, log utils.Logger) *Restic {
+func NewRestic(ctx context.Context, repoPath, extraArgs, password string, sudo bool, log utils.Logger) *Restic {
 	return &Restic{
+		ctx:       ctx,
+		log:       log,
 		repoPath:  filepath.ToSlash(repoPath),
 		extraArgs: extraArgs,
 		sudo:      sudo,
 		password:  password,
-		log:       log,
 	}
 }
 
@@ -81,14 +83,8 @@ func (r *Restic) run(command string) error {
 		return fmt.Errorf("empty command")
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	utils.AddExitHandler(func() { cancel() })
-
-	cmd := exec.CommandContext(ctx, w[0], w[1:]...)
-	// https://stackoverflow.com/questions/33165530/prevent-ctrlc-from-interrupting-exec-command-in-golang/33171307
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
-	}
+	cmd := exec.CommandContext(r.ctx, w[0], w[1:]...)
+	cmd.SysProcAttr = utils.SysProcAttr()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
