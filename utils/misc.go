@@ -4,8 +4,11 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 )
+
+const RunningOnWindows = runtime.GOOS == "windows"
 
 func DirSize(path string) (int64, error) {
 	var size int64
