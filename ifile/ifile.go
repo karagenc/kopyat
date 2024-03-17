@@ -43,7 +43,9 @@ type (
 )
 
 const (
+	// Include file. Paths are absolute.
 	ModeRestic Mode = iota
+	// Ignore file. Paths are relative to the .gitignore/.csignore.
 	ModeSyncthing
 )
 
@@ -78,7 +80,7 @@ func New(filePath string, mode Mode, appendToExisting bool, log utils.Logger) (i
 	if err != nil {
 		return nil, err
 	}
-	ifile.flock = flock.New(ifile.filePath)
+	//ifile.flock = flock.New(ifile.filePath)
 	flockChan := make(chan struct{})
 
 	go func(ifile *Ifile, flockChan <-chan struct{}) {
@@ -89,10 +91,10 @@ func New(filePath string, mode Mode, appendToExisting bool, log utils.Logger) (i
 			log.Warnf("Waiting to lock file `%s`. Another process or goroutine holds lock to the file.", ifile.filePath)
 		}
 	}(ifile, flockChan)
-	err = ifile.flock.Lock()
-	if err != nil {
-		return nil, err
-	}
+	// err = ifile.flock.Lock()
+	// if err != nil {
+	// 	return nil, err
+	// }
 	close(flockChan)
 
 	if appendToExisting {
@@ -186,7 +188,7 @@ func (i *Ifile) Close() (err error) {
 		} else {
 			_, err2 = i.file.WriteString("\n")
 		}
-		i.flock.Unlock()
+		//i.flock.Unlock()
 		i.file.Close()
 	})
 

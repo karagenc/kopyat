@@ -23,8 +23,7 @@ ifile_generation:
     pre:
     post:
   run:
-    - scan_path: /path/to/st-dir
-      ifile: /path/to/st-dir/.stignore
+    - ifile: /path/to/st-dir/.stignore
       for: syncthing
       hooks:
         pre:

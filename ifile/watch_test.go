@@ -2,7 +2,6 @@ package ifile
 
 import (
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -13,14 +12,12 @@ import (
 )
 
 func TestWatch(t *testing.T) {
-	os.Remove("test_ifile")
+	os.Remove(testIfile)
 	os.Remove("test_txtfile")
 
-	defer os.Remove("test_txtfile")
+	defer os.Remove(testIfile)
 
-	path, err := filepath.Abs("..")
-	require.NoError(t, err)
-	j := NewWatchJob(utils.NewCLILogger(true), path, "test_ifile", ModeSyncthing)
+	j := NewWatchJob(utils.NewCLILogger(true), testIfile, ModeSyncthing)
 
 	var (
 		walk      = j.walk
@@ -31,7 +28,7 @@ func TestWatch(t *testing.T) {
 
 	j.walk = func() error {
 		walkErr := walk()
-		c, err := os.ReadFile("test_ifile")
+		c, err := os.ReadFile(testIfile)
 
 		mu.Lock()
 		content = c
@@ -56,7 +53,7 @@ func TestWatch(t *testing.T) {
 		time.Sleep(time.Millisecond * 50)
 	}
 
-	err = os.WriteFile("test_txtfile", []byte(""), 0644)
+	err := os.WriteFile(testIfile, []byte(""), 0644)
 	require.NoError(t, err)
 
 	for {
@@ -82,16 +79,14 @@ func TestWatch(t *testing.T) {
 
 // Make sure newly created .gitignore and ignored file gets watched and entry gets added.
 func TestWatchIgnore(t *testing.T) {
-	os.Remove("test_ifile")
+	os.Remove(testIfile)
 	os.Remove("test_txtfile")
 	os.Remove(".gitignore")
 
 	defer os.Remove("test_txtfile")
 	defer os.Remove(".gitignore")
 
-	path, err := filepath.Abs("..")
-	require.NoError(t, err)
-	j := NewWatchJob(utils.NewCLILogger(true), path, "test_ifile", ModeSyncthing)
+	j := NewWatchJob(utils.NewCLILogger(true), testIfile, ModeSyncthing)
 
 	var (
 		walk      = j.walk
@@ -102,7 +97,7 @@ func TestWatchIgnore(t *testing.T) {
 
 	j.walk = func() error {
 		walkErr := walk()
-		c, err := os.ReadFile("test_ifile")
+		c, err := os.ReadFile(testIfile)
 
 		mu.Lock()
 		content = c
@@ -126,7 +121,7 @@ func TestWatchIgnore(t *testing.T) {
 		time.Sleep(50 * time.Millisecond)
 	}
 
-	err = os.WriteFile(".gitignore", []byte("test_txtfile"), 0644)
+	err := os.WriteFile(".gitignore", []byte("test_txtfile"), 0644)
 	require.NoError(t, err)
 
 	err = os.WriteFile("test_txtfile", []byte(""), 0644)

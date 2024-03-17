@@ -26,10 +26,9 @@ type (
 	}
 
 	IfileGenerationRun struct {
-		ScanPath string `mapstructure:"scan_path"`
-		Ifile    string `mapstructure:"ifile"`
-		For      string `mapstructure:"for"`
-		Hooks    Hooks  `mapstructure:"hooks"`
+		Ifile string `mapstructure:"ifile"`
+		For   string `mapstructure:"for"`
+		Hooks Hooks  `mapstructure:"hooks"`
 	}
 
 	Scripts struct {
@@ -123,7 +122,6 @@ func (c *Config) PlaceEnvironmentVariables() {
 	}
 	for i := range c.IfileGeneration.Run {
 		replace(&c.IfileGeneration.Run[i].Ifile)
-		replace(&c.IfileGeneration.Run[i].ScanPath)
 		for j := range c.IfileGeneration.Run[i].Hooks.Pre {
 			replace(&c.IfileGeneration.Run[i].Hooks.Pre[j])
 		}
@@ -212,12 +210,6 @@ func (c *Config) CheckDaemon() error {
 		}
 		if !filepath.IsAbs(run.Ifile) {
 			return fmt.Errorf("ifile path `%s` is not absolute. to avoid confusion, it must be absolute.", run.Ifile)
-		}
-		if run.ScanPath == "" {
-			return fmt.Errorf("empty scan_path. remove it or set it to a directory in configuration file.")
-		}
-		if !filepath.IsAbs(run.ScanPath) {
-			return fmt.Errorf("scan_path `%s` is not absolute. to avoid confusion, it must be absolute.", run.ScanPath)
 		}
 	}
 	return nil

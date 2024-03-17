@@ -11,8 +11,8 @@ import (
 )
 
 func TestSyncthingWalkInCurrentProject(t *testing.T) {
-	os.Remove("test_ifile")
-	i, err := New("test_ifile", ModeSyncthing, true, utils.NewCLILogger(true))
+	os.Remove(testIfile)
+	i, err := New(testIfile, ModeSyncthing, true, utils.NewCLILogger(true))
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -25,7 +25,7 @@ func TestSyncthingWalkInCurrentProject(t *testing.T) {
 	err = i.Close()
 	require.NoError(t, err)
 
-	content, err := os.ReadFile("test_ifile")
+	content, err := os.ReadFile(testIfile)
 	require.NoError(t, err)
 
 	for _, line := range strings.Split(string(content), "\n") {
@@ -40,8 +40,8 @@ func TestSyncthingWalkInCurrentProject(t *testing.T) {
 
 // Ensure the root path doesn't appear in ifile.
 func TestSyncthingWalkNoRootMatchesInCurrentProject(t *testing.T) {
-	os.Remove("test_ifile")
-	i, err := New("test_ifile", ModeSyncthing, true, utils.NewCLILogger(true))
+	os.Remove(testIfile)
+	i, err := New(testIfile, ModeSyncthing, true, utils.NewCLILogger(true))
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -54,7 +54,7 @@ func TestSyncthingWalkNoRootMatchesInCurrentProject(t *testing.T) {
 	err = i.Close()
 	require.NoError(t, err)
 
-	content, err := os.ReadFile("test_ifile")
+	content, err := os.ReadFile(testIfile)
 	require.NoError(t, err)
 
 	for _, line := range strings.Split(string(content), "\n") {
@@ -67,8 +67,8 @@ func TestSyncthingWalkNoRootMatchesInCurrentProject(t *testing.T) {
 }
 
 func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
-	os.Remove("test_ifile")
-	i, err := New("test_ifile", ModeSyncthing, true, utils.NewCLILogger(true))
+	os.Remove(testIfile)
+	i, err := New(testIfile, ModeSyncthing, true, utils.NewCLILogger(true))
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -81,7 +81,7 @@ func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
 	err = i.Close()
 	require.NoError(t, err)
 
-	i, err = New("test_ifile", ModeSyncthing, true, utils.NewCLILogger(true))
+	i, err = New(testIfile, ModeSyncthing, true, utils.NewCLILogger(true))
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -91,7 +91,7 @@ func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
 	err = i.Close()
 	require.NoError(t, err)
 
-	content, err := os.ReadFile("test_ifile")
+	content, err := os.ReadFile(testIfile)
 	require.NoError(t, err)
 
 	found1 := true
@@ -118,8 +118,8 @@ func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
 }
 
 func TestResticWalkInCurrentProject(t *testing.T) {
-	os.Remove("test_ifile")
-	i, err := New("test_ifile", ModeRestic, false, utils.NewCLILogger(true))
+	os.Remove(testIfile)
+	i, err := New(testIfile, ModeRestic, false, utils.NewCLILogger(true))
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -132,7 +132,7 @@ func TestResticWalkInCurrentProject(t *testing.T) {
 	err = i.Close()
 	require.NoError(t, err)
 
-	content, err := os.ReadFile("test_ifile")
+	content, err := os.ReadFile(testIfile)
 	require.NoError(t, err)
 
 	for _, line := range strings.Split(string(content), "\n") {

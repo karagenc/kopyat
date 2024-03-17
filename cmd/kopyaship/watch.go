@@ -39,7 +39,7 @@ var (
 			fmt.Println()
 			w := table.NewWriter()
 			w.AppendHeader(table.Row{
-				"IFILE", "SCAN PATH", "MODE", "ERRORS",
+				"IFILE", "MODE", "ERRORS",
 			})
 			for _, info := range infos {
 				e := ""
@@ -50,7 +50,7 @@ var (
 					}
 				}
 				w.AppendRow(table.Row{
-					info.Ifile, info.ScanPath, info.Mode, e,
+					info.Ifile, info.Mode, e,
 				})
 			}
 			fmt.Println(w.Render())

@@ -31,10 +31,9 @@ type (
 	WatchJobStatus int32
 
 	WatchJobInfo struct {
-		ScanPath string   `json:"scanPath"`
-		Ifile    string   `json:"ifile"`
-		Errors   []string `json:"errors"`
-		Mode     string   `json:"mode"`
+		Ifile  string   `json:"ifile"`
+		Errors []string `json:"errors"`
+		Mode   string   `json:"mode"`
 	}
 )
 
@@ -62,13 +61,13 @@ func (s WatchJobStatus) String() string {
 	}
 }
 
-func NewWatchJob(log utils.Logger, scanPath, ifile string, mode Mode) *WatchJob {
+func NewWatchJob(log utils.Logger, ifile string, mode Mode) *WatchJob {
 	j := &WatchJob{
 		log:      log,
 		status:   atomic.Int32{},
 		stopped:  make(chan struct{}),
 		errs:     make(chan error, 5),
-		scanPath: scanPath,
+		scanPath: filepath.Dir(ifile),
 		ifile:    ifile,
 		mode:     mode,
 	}
@@ -103,10 +102,9 @@ func (j *WatchJob) Info() *WatchJobInfo {
 	}
 
 	return &WatchJobInfo{
-		ScanPath: j.scanPath,
-		Ifile:    j.ifile,
-		Errors:   errs,
-		Mode:     titleCaser.String(j.mode.String()),
+		Ifile:  j.ifile,
+		Errors: errs,
+		Mode:   titleCaser.String(j.mode.String()),
 	}
 }
 
