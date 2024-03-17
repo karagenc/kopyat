@@ -211,11 +211,5 @@ func (e *entry) String() string {
 	s = strings.ReplaceAll(s, "[", "\\[")
 	s = strings.ReplaceAll(s, "]", "\\]")
 	s = filepath.ToSlash(s)
-
-	if utils.RunningOnWindows && len(s) >= 2 &&
-		(s[0] >= 'A' && s[0] <= 'Z') || (s[0] >= 'a' && s[0] <= 'z') &&
-		s[1] == ':' {
-		s = s[2:]
-	}
 	return s
 }

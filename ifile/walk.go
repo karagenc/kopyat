@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	pathspec "github.com/tomruk/go-pathspec"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 const (
@@ -70,6 +71,8 @@ func (i *Ifile) Walk(root string) error {
 
 		if i.mode == ModeSyncthing && !anyMatches {
 			return nil
+		} else if i.mode == ModeSyncthing {
+			stripDriveLetter(&path)
 		}
 
 		entries = append(entries, &entry{
@@ -136,4 +139,12 @@ func addIgnoreIfExists(ignorefiles *[]*ignorefile, dir string) error {
 		})
 	}
 	return nil
+}
+
+func stripDriveLetter(path *string) {
+	if utils.RunningOnWindows && len(*path) >= 2 &&
+		((*path)[0] >= 'A' && (*path)[0] <= 'Z') || ((*path)[0] >= 'a' && (*path)[0] <= 'z') &&
+		(*path)[1] == ':' {
+		*path = (*path)[2:]
+	}
 }
