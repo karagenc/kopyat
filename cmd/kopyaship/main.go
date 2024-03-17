@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"runtime"
+	"strings"
+	"syscall"
 
 	"github.com/kirsle/configdir"
 	"github.com/spf13/cobra"
@@ -25,6 +29,34 @@ var (
 func main() { rootCmd.Execute() }
 
 func init() {
+	sigChan := make(chan os.Signal, 2)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		for {
+			sig := <-sigChan
+			switch sig {
+			case syscall.SIGINT:
+				for {
+					r := bufio.NewReader(os.Stdin)
+					fmt.Print("Are you sure (y/N): ")
+					input, _ := r.ReadString('\n')
+					input = strings.TrimSpace(input)
+
+					if strings.EqualFold(input, "y") {
+						utils.Exit(2)
+					} else if strings.EqualFold(input, "n") {
+						break
+					} else {
+						fmt.Println("Invalid input. y or n expected.")
+					}
+				}
+			case syscall.SIGTERM:
+				utils.Exit(3)
+			}
+		}
+	}()
+
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(backupCmd)
 	rootCmd.AddCommand(pingCmd)
@@ -86,7 +118,7 @@ func initCache(systemWide bool) {
 func exit(err error) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		utils.Exit(1)
 	}
-	os.Exit(0)
+	utils.Exit(0)
 }

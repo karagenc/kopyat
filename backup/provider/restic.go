@@ -1,9 +1,11 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
+	"syscall"
 
 	"github.com/mattn/go-shellwords"
 	"github.com/tomruk/kopyaship/utils"
@@ -77,7 +79,14 @@ func (r *Restic) run(command string) error {
 		return fmt.Errorf("empty command")
 	}
 
-	cmd := exec.Command(w[0], w[1:]...)
+	ctx, cancel := context.WithCancel(context.Background())
+	utils.AddExitHandler(func() { cancel() })
+
+	cmd := exec.CommandContext(ctx, w[0], w[1:]...)
+	// https://stackoverflow.com/questions/33165530/prevent-ctrlc-from-interrupting-exec-command-in-golang/33171307
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
