@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -70,7 +71,7 @@ func New(filePath string, mode Mode, appendToExisting bool, log utils.Logger) (i
 		filePath: filePath,
 	}
 
-	flags := os.O_CREATE | os.O_WRONLY
+	flags := os.O_CREATE | os.O_RDWR
 	if !appendToExisting {
 		flags |= os.O_TRUNC
 	}
@@ -109,10 +110,11 @@ func New(filePath string, mode Mode, appendToExisting bool, log utils.Logger) (i
 }
 
 func (i *Ifile) seekToEnd() (existing map[string]interface{}, err error) {
-	content, err := os.ReadFile(i.filePath)
+	content, err := io.ReadAll(i.file)
 	if err != nil {
 		return nil, err
 	}
+
 	content = bytes.ReplaceAll(content, []byte{'\r', '\n'}, []byte{'\n'})
 	splitted := bytes.Split(content, []byte{'\n'})
 	existing = make(map[string]interface{}, len(splitted)-2)
@@ -143,7 +145,15 @@ func (i *Ifile) seekToEnd() (existing map[string]interface{}, err error) {
 	}
 
 	// To apply potential newline seperator change.
-	err = os.WriteFile(i.filePath, content, 0660)
+	_, err = i.file.Seek(0, io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	err = i.file.Truncate(0)
+	if err != nil {
+		return nil, err
+	}
+	_, err = i.file.Write(content)
 	if err != nil {
 		return nil, err
 	}
