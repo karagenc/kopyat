@@ -102,12 +102,8 @@ outer:
 				}
 			}
 		}
-		s := entry.String()
-		if _, ok := i.existing[s[:len(s)-1]]; ok {
-			continue
-		}
 
-		_, err = i.buf.WriteString(s)
+		_, err = i.buf.WriteString(entry.String())
 		if err != nil {
 			return err
 		}

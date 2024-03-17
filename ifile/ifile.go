@@ -17,11 +17,10 @@ import (
 
 type (
 	Ifile struct {
-		mode     Mode
-		existing map[string]interface{}
-		buf      bytes.Buffer
-		bufMu    sync.Mutex
-		end      []byte
+		mode  Mode
+		buf   bytes.Buffer
+		bufMu sync.Mutex
+		end   []byte
 
 		filePath string
 		file     *os.File
@@ -97,7 +96,7 @@ func New(filePath string, mode Mode, appendToExisting bool, log utils.Logger) (i
 	close(flockChan)
 
 	if appendToExisting {
-		ifile.existing, err = ifile.seekToEnd()
+		err = ifile.seekToEnd()
 		if err != nil {
 			return nil, err
 		}
@@ -109,15 +108,14 @@ func New(filePath string, mode Mode, appendToExisting bool, log utils.Logger) (i
 	return
 }
 
-func (i *Ifile) seekToEnd() (existing map[string]interface{}, err error) {
+func (i *Ifile) seekToEnd() error {
 	content, err := io.ReadAll(i.file)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	content = bytes.ReplaceAll(content, []byte{'\r', '\n'}, []byte{'\n'})
 	splitted := bytes.Split(content, []byte{'\n'})
-	existing = make(map[string]interface{}, len(splitted)-2)
 
 	begin := -1
 	end := -1
@@ -129,51 +127,51 @@ func (i *Ifile) seekToEnd() (existing map[string]interface{}, err error) {
 			break
 		} else if bytes.Equal(line, []byte(beginIndicator)) {
 			begin = c
-		} else if begin != -1 && end == -1 {
-			if len(line) != 0 {
-				existing[string(line)] = nil
-			}
 		}
-
 		c += len(line) + 1
 	}
 
 	if begin == -1 && end != -1 {
-		return nil, fmt.Errorf("ifile begin indicator ('%s') not found", beginIndicator)
+		return fmt.Errorf("ifile begin indicator ('%s') not found", beginIndicator)
 	} else if end == -1 && begin != -1 {
-		return nil, fmt.Errorf("ifile end indicator ('%s') not found", endIndicator)
+		return fmt.Errorf("ifile end indicator ('%s') not found", endIndicator)
 	}
 
 	// To apply potential newline seperator change.
 	_, err = i.file.Seek(0, io.SeekStart)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	err = i.file.Truncate(0)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	_, err = i.file.Write(content)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if begin == -1 && end == -1 {
 		_, err := i.file.Seek(0, io.SeekEnd)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		i.buf.WriteString(generatedBy + "\n")
 		i.buf.WriteString(beginIndicator + "\n")
 		i.end = append(i.end, []byte(endIndicator+"\n")...)
 	} else {
-		i.end = content[end:]
-		_, err = i.file.Seek(int64(end), io.SeekStart)
+		seek := int64(begin + len(beginIndicator) + 1)
+		err = i.file.Truncate(seek)
 		if err != nil {
-			return nil, err
+			return err
 		}
+		_, err = i.file.Seek(seek, io.SeekStart)
+		if err != nil {
+			return err
+		}
+		i.end = content[end:]
 	}
-	return
+	return nil
 }
 
 func (i *Ifile) Close() (err error) {
