@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"syscall"
+	"path/filepath"
 
 	"github.com/mattn/go-shellwords"
 	"github.com/tomruk/kopyaship/utils"
@@ -22,7 +22,7 @@ type Restic struct {
 
 func NewRestic(repoPath, extraArgs, password string, sudo bool, log utils.Logger) *Restic {
 	return &Restic{
-		repoPath:  repoPath,
+		repoPath:  filepath.ToSlash(repoPath),
 		extraArgs: extraArgs,
 		sudo:      sudo,
 		password:  password,
@@ -37,6 +37,7 @@ func (r *Restic) Init() error {
 }
 
 func (r *Restic) Backup(path string) error {
+	path = filepath.ToSlash(path)
 	command := fmt.Sprintf("restic -r %s backup", r.repoPath)
 	if r.extraArgs != "" {
 		command += " " + r.extraArgs
@@ -46,6 +47,7 @@ func (r *Restic) Backup(path string) error {
 }
 
 func (r *Restic) BackupWithIfile(ifile string) error {
+	ifile = filepath.ToSlash(ifile)
 	command := fmt.Sprintf("restic -r %s backup", r.repoPath)
 	if r.extraArgs != "" {
 		command += " " + r.extraArgs
