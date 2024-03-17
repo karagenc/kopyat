@@ -2,6 +2,7 @@ package ifile
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sync/atomic"
@@ -23,6 +24,8 @@ type (
 		scanPath string
 		ifile    string
 		mode     Mode
+
+		walk func() error
 	}
 
 	WatchJobStatus int32
@@ -68,6 +71,14 @@ func NewWatchJob(log utils.Logger, scanPath, ifile string, mode Mode) *WatchJob 
 		scanPath: scanPath,
 		ifile:    ifile,
 		mode:     mode,
+	}
+	j.walk = func() error {
+		i, err := New(j.ifile, j.mode, true, j.log)
+		if err != nil {
+			return err
+		}
+		defer i.Close()
+		return i.Walk(j.scanPath)
 	}
 	j.status.Store(int32(WatchJobStatusWillRun))
 	return j
@@ -158,19 +169,10 @@ func (j *WatchJob) logError(err error) {
 
 func (j *WatchJob) sleepBeforeRetry(seconds time.Duration) {
 	time.Sleep(seconds * time.Second)
-	j.log.Info("retry in %d second(s)", seconds)
+	j.log.Infoln("retry in %d second(s)", seconds)
 }
 
 func (j *WatchJob) fail() { j.status.Store(int32(WatchJobStatusFailed)) }
-
-func (j *WatchJob) walk() error {
-	i, err := New(j.ifile, j.mode, true, j.log)
-	if err != nil {
-		return err
-	}
-	defer i.Close()
-	return i.Walk(j.scanPath)
-}
 
 func (j *WatchJob) Shutdown() error {
 	close(j.stopped)
@@ -183,10 +185,6 @@ func watch(path string) (*fsnotify.Watcher, <-chan string, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	err = watcher.Add(path)
-	if err != nil {
-		return nil, nil, err
-	}
 
 	c := make(chan string, 1)
 	go func() {
@@ -196,10 +194,17 @@ func watch(path string) (*fsnotify.Watcher, <-chan string, error) {
 				if !ok {
 					return
 				}
-				if event.Has(fsnotify.Create) || event.Has(fsnotify.Write) {
+				if event.Has(fsnotify.Create) {
+					if st, err := os.Stat(event.Name); err == nil {
+						if st.IsDir() {
+							watcher.Add(event.Name)
+						}
+					}
+					c <- event.Name
+				} else if event.Has(fsnotify.Write) {
 					base := filepath.Base(event.Name)
 					if base == gitignore || base == csignore {
-
+						c <- event.Name
 					}
 				}
 			case err, ok := <-watcher.Errors:
@@ -210,5 +215,19 @@ func watch(path string) (*fsnotify.Watcher, <-chan string, error) {
 			}
 		}
 	}()
+
+	err = filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			err := watcher.Add(path)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
 	return watcher, c, nil
 }

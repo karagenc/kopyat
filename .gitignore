@@ -9,5 +9,4 @@ __debug_bin*
 /kopyaship.yml
 /tmp
 test_ifile
-test_txtfile
 *.out
