@@ -84,7 +84,6 @@ func (r *Restic) run(command string) error {
 	}
 
 	cmd := exec.CommandContext(r.ctx, w[0], w[1:]...)
-	cmd.SysProcAttr = utils.SysProcAttr()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin

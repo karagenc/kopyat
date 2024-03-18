@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"sync"
 	"syscall"
 
@@ -34,29 +32,13 @@ func init() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		for {
-			sig := <-sigChan
-			switch sig {
-			case syscall.SIGINT:
-				for {
-					r := bufio.NewReader(os.Stdin)
-					fmt.Print("Are you sure you want to exit? (y/N): ")
-					input, _ := r.ReadString('\n')
-					input = strings.TrimSpace(input)
-
-					if strings.EqualFold(input, "y") {
-						code := 2
-						exit(nil, &code)
-					} else if strings.EqualFold(input, "n") {
-						break
-					} else {
-						fmt.Println("Invalid input. y or n expected.")
-					}
-				}
-			case syscall.SIGTERM:
-				code := 2
-				exit(nil, &code)
-			}
+		sig := <-sigChan
+		switch sig {
+		case syscall.SIGINT:
+			fallthrough
+		case syscall.SIGTERM:
+			code := 2
+			exit(nil, &code)
 		}
 	}()
 
