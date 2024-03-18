@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -48,9 +47,9 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 		listeningOn := " unix socket: " + socketPath
 
 		l, err := net.Listen("unix", socketPath)
-		// Unix socket is supported with Windows 10 Insider Build 17063 and later.
+		// Unix socket is supported on Windows 10 Insider Build 17063 and later.
 		// For older versions, fall back to HTTP.
-		if err != nil && runtime.GOOS == "windows" {
+		if err != nil && utils.RunningOnWindows {
 			opErr, ok := err.(*net.OpError)
 			if ok {
 				_, ok := opErr.Unwrap().(*os.SyscallError)

@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"runtime"
 	"sync"
 	"syscall"
 
@@ -83,7 +82,7 @@ func initCache(systemWide bool) {
 	cacheDir = os.Getenv("KOPYASHIP_CACHE")
 	if cacheDir == "" {
 		if systemWide {
-			if runtime.GOOS != "windows" {
+			if !utils.RunningOnWindows {
 				cacheDir = "/var/cache/kopyaship"
 			} else {
 				cacheDir = filepath.Join(os.Getenv("PROGRAMDATA"), "kopyaship", "cache")

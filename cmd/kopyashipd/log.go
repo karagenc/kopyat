@@ -3,9 +3,9 @@ package main
 import (
 	"net/url"
 	"os"
-	"runtime"
 	"strings"
 
+	"github.com/tomruk/kopyaship/utils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -22,7 +22,7 @@ func (v *svice) newLogger(debug bool) (*zap.Logger, *logger, error) {
 	logFile := v.config.Daemon.Log
 	if logFile != "" {
 		// https://github.com/uber-go/zap/issues/621
-		if runtime.GOOS == "windows" {
+		if utils.RunningOnWindows {
 			logFile = "winfile:///" + logFile
 
 			newWinFileSink := func(u *url.URL) (zap.Sink, error) {

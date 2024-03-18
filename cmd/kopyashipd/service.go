@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -21,6 +20,7 @@ import (
 	"github.com/tomruk/kopyaship/config"
 	_config "github.com/tomruk/kopyaship/config"
 	"github.com/tomruk/kopyaship/ifile"
+	"github.com/tomruk/kopyaship/utils"
 	"go.uber.org/zap"
 )
 
@@ -133,7 +133,7 @@ func (v *svice) initCache(systemWide bool) error {
 	v.cacheDir = os.Getenv("KOPYASHIP_CACHE")
 	if v.cacheDir == "" {
 		if systemWide {
-			if runtime.GOOS != "windows" {
+			if !utils.RunningOnWindows {
 				v.cacheDir = "/var/cache/kopyaship"
 			} else {
 				v.cacheDir = filepath.Join(os.Getenv("PROGRAMDATA"), "kopyaship", "cache")

@@ -95,7 +95,7 @@ func (b *Backup) skipOS() bool {
 	)
 	switch {
 	case ifOSIs != "" && osNameShort != ifOSIs:
-		fallthrough
+		return true
 	case osNameShort == "darwin" && ifOSIs == "macos" || ifOSIs == "mac" || ifOSIs == "osx":
 		return true
 	}

@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/tomruk/kopyaship/utils"
@@ -44,9 +43,9 @@ func newHTTPClient() (*httpClient, error) {
 		}
 	}
 
-	// Unix socket is supported with Windows 10 Insider Build 17063 and later.
+	// Unix socket is supported on Windows 10 Insider Build 17063 and later.
 	// For older versions, fall back to HTTP.
-	if listen == "ipc" && runtime.GOOS == "windows" {
+	if listen == "ipc" && utils.RunningOnWindows {
 		tempSocketFile := "C:\\kopyaship_tmp_" + utils.RandString(5) + ".socket"
 		defer os.Remove(tempSocketFile)
 		l, err := net.Listen("unix", tempSocketFile)

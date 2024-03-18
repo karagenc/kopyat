@@ -5,10 +5,10 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/spf13/viper"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 type (
@@ -57,7 +57,7 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 		v.SetConfigType("yml")
 		v.AddConfigPath(".")
 
-		if runtime.GOOS != "windows" {
+		if !utils.RunningOnWindows {
 			if os.Getenv("$XDG_CONFIG_HOME") != "" {
 				v.AddConfigPath("$XDG_CONFIG_HOME/kopyaship")
 			} else {
@@ -87,14 +87,14 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 		return
 	}
 	os.Setenv("KOPYASHIP_CONFIG", configFile)
-	if strings.HasPrefix(configFile, "/etc") || (runtime.GOOS == "windows" && strings.HasPrefix(configFile, os.Getenv("PROGRAMDATA"))) {
+	if strings.HasPrefix(configFile, "/etc") || (utils.RunningOnWindows && strings.HasPrefix(configFile, os.Getenv("PROGRAMDATA"))) {
 		systemWide = true
 	}
 	return
 }
 
 func (c *Config) PlaceEnvironmentVariables() {
-	if runtime.GOOS == "windows" {
+	if utils.RunningOnWindows {
 		os.Setenv("HOME", os.Getenv("USERPROFILE"))
 	}
 
