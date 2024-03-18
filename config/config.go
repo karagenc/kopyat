@@ -104,6 +104,8 @@ func (c *Config) PlaceEnvironmentVariables() {
 	}
 
 	for key, value := range c.Env {
+		key = strings.ToUpper(key)
+		c.Env[key] = value
 		replace(&value)
 		os.Setenv(key, value)
 	}
