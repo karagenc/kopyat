@@ -1,12 +1,14 @@
 package backup
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"os"
 	"runtime"
 	"strings"
+	"syscall"
+
+	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/docker/go-units"
 	"github.com/tomruk/kopyaship/backup/provider"
@@ -104,10 +106,13 @@ func (backup *Backup) Do() error {
 	if !backup.GenerateIfile {
 		_, isRestic := backup.Provider.(*provider.Restic)
 		if !backup.isDaemon && isRestic && !backup.Provider.PasswordIsSet() {
-			reader := bufio.NewReader(os.Stdin)
 			fmt.Printf("Enter password for the repository: %s: ", backup.Provider.TargetLocation())
-			password, _ := reader.ReadString('\n')
-			os.Setenv("RESTIC_PASSWORD", password)
+			password, err := terminal.ReadPassword(syscall.Stdin)
+			fmt.Println()
+			if err != nil {
+				return err
+			}
+			os.Setenv("RESTIC_PASSWORD", string(password))
 			defer os.Unsetenv("RESTIC_PASSWORD")
 		}
 
