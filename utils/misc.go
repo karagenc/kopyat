@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -35,4 +36,33 @@ func RandString(n int) string {
 		b[i] = letters[r.Intn(len(letters))]
 	}
 	return string(b)
+}
+
+func ConvertToPascalCase(name string) string {
+	return convertToMixedCase(name, true)
+}
+
+func ConvertToCamelCase(name string) string {
+	return convertToMixedCase(name, false)
+}
+
+func convertToMixedCase(name string, firstToUpper bool) string {
+	newName := strings.Builder{}
+	newName.Grow(len(name))
+
+	i := 0
+	if firstToUpper {
+		newName.WriteByte(strings.ToUpper(string(name[i]))[0])
+		i++
+	}
+
+	for ; i < len(name); i++ {
+		b := name[i]
+		if b == '-' || b == '_' || b == ' ' && i != len(name)-1 {
+			newName.WriteByte(strings.ToUpper(string(name[i+1]))[0])
+		} else {
+			newName.WriteByte(b)
+		}
+	}
+	return newName.String()
 }

@@ -46,6 +46,7 @@ func init() {
 	rootCmd.AddCommand(pingCmd)
 	rootCmd.AddCommand(watchCmd)
 	rootCmd.AddCommand(doctorCmd)
+	rootCmd.AddCommand(runCmd)
 
 	rootCmd.PersistentFlags().StringP("config", "c", "", "Configuration file")
 

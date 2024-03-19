@@ -10,3 +10,4 @@ __debug_bin*
 /tmp
 test_ifile
 *.out
+/script-playground
