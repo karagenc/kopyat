@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 
 	"github.com/docker/go-units"
 	"github.com/tomruk/kopyaship/backup/provider"
@@ -107,7 +107,7 @@ func (backup *Backup) Do() error {
 		_, isRestic := backup.Provider.(*provider.Restic)
 		if !backup.isDaemon && isRestic && !backup.Provider.PasswordIsSet() {
 			fmt.Printf("Enter password for the repository: %s: ", backup.Provider.TargetLocation())
-			password, err := terminal.ReadPassword(syscall.Stdin)
+			password, err := term.ReadPassword(syscall.Stdin)
 			fmt.Println()
 			if err != nil {
 				return err

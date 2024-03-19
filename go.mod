@@ -18,8 +18,8 @@ require (
 	github.com/tomruk/go-pathspec v0.1.0
 	github.com/traefik/yaegi v0.16.0
 	go.uber.org/zap v1.21.0
-	golang.org/x/crypto v0.21.0
 	golang.org/x/sync v0.1.0
+	golang.org/x/term v0.18.0
 	golang.org/x/text v0.14.0
 )
 
