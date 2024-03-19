@@ -8,20 +8,20 @@ import (
 
 type Exec struct {
 	ctx context.Context
-	w   []string
+	sw  []string
 }
 
-func newExec(ctx context.Context, w ...string) *Exec {
+func newExec(ctx context.Context, sw ...string) *Exec {
 	return &Exec{
 		ctx: ctx,
-		w:   w,
+		sw:  sw,
 	}
 }
 
-func (e *Exec) Location() string { return e.w[0] }
+func (e *Exec) Location() string { return e.sw[0] }
 
 func (e *Exec) Run() error {
-	cmd := exec.CommandContext(e.ctx, e.w[0], e.w[1:]...)
+	cmd := exec.CommandContext(e.ctx, e.sw[0], e.sw[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin

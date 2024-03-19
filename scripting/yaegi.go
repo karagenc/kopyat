@@ -34,9 +34,10 @@ func newYaegiScript(ctx context.Context, sw ...string) (*YaegiScript, error) {
 	i.Use(stdlib.Symbols)
 	i.Use(symbols)
 
-	base := strings.TrimSuffix(filepath.Base(sw[0]), ".go")
-	structNamePascalCase := utils.ConvertToPascalCase(base)
-	structNameCamelCase := utils.ConvertToCamelCase(base)
+	bin := sw[0]
+	binWithoutExtension := strings.TrimSuffix(filepath.Base(bin), ".go")
+	structNamePascalCase := utils.ConvertToPascalCase(binWithoutExtension)
+	structNameCamelCase := utils.ConvertToCamelCase(binWithoutExtension)
 
 	prog, err := i.CompilePath(sw[0])
 	if err != nil {
@@ -51,6 +52,10 @@ func newYaegiScript(ctx context.Context, sw ...string) (*YaegiScript, error) {
 		structNamePrimary:   structNamePascalCase,
 		structNameSecondary: structNameCamelCase,
 	}, nil
+}
+
+func runAsRoot() {
+
 }
 
 func (s *YaegiScript) Location() string { return s.location }
