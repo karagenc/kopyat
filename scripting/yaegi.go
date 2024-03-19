@@ -55,30 +55,36 @@ func newYaegiScript(ctx context.Context, sw ...string) (*YaegiScript, error) {
 
 func (s *YaegiScript) Location() string { return s.location }
 
-func (s *YaegiScript) Run() error {
-	_, err := s.i.ExecuteWithContext(s.ctx, s.prog)
+func (s *YaegiScript) Run() (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+		}
+	}()
+	_, err = s.i.ExecuteWithContext(s.ctx, s.prog)
 	if err != nil {
-		return err
+		return
 	}
 
 	_, err = s.i.Eval(`import _scripting_s "github.com/tomruk/kopyaship/scripting/s"`)
 	if err != nil {
-		return err
+		return
 	}
 	varName := utils.RandString(10)
 	_, err = s.i.Eval(fmt.Sprintf("var %s _scripting_s.Runner = &%s{}", varName, s.structNamePrimary))
 	if err != nil && strings.Contains(err.Error(), "undefined type") {
 		_, err = s.i.Eval(fmt.Sprintf("var %s _scripting_s.Runner = &%s{}", varName, s.structNameSecondary))
 		if err != nil {
-			return err
+			return
 		}
 	} else if err != nil {
-		return err
+		return
 	}
 
-	res, err := s.i.Eval(varName)
+	var res reflect.Value
+	res, err = s.i.Eval(varName)
 	if err != nil {
-		return err
+		return
 	}
 	v, ok := res.Interface().(_s.Runner)
 	if !ok {

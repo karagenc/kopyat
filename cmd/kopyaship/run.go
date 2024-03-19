@@ -2,17 +2,21 @@ package main
 
 import (
 	"context"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/tomruk/kopyaship/scripting"
 )
 
 var runCmd = &cobra.Command{
-	Use: "run",
-	Run: func(cmd *cobra.Command, args []string) {
+	Use:  "run",
+	Args: cobra.MinimumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := context.WithCancel(context.Background())
 		addExitHandler(cancel)
-		script, err := scripting.NewScript(ctx, "./script-playground/foo.go 1 2 3")
+		command := strings.Join(args, " ")
+
+		script, err := scripting.NewScript(ctx, command)
 		if err != nil {
 			exit(err, nil)
 		}
@@ -20,5 +24,6 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			exit(err, nil)
 		}
+		return nil
 	},
 }
