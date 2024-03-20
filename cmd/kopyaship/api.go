@@ -17,7 +17,8 @@ import (
 
 type httpClient struct {
 	*http.Client
-	u *url.URL
+	u          *url.URL
+	socketAddr string
 
 	basicAuth func() string
 }
@@ -62,16 +63,16 @@ func newHTTPClient() (*httpClient, error) {
 	}
 
 	if listen == "ipc" {
+		socketAddr := filepath.Join(cacheDir, "api.socket")
 		client := &http.Client{
 			Transport: &http.Transport{
 				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 					dialer := net.Dialer{}
-					socketAddr := filepath.Join(cacheDir, "api.socket")
 					return dialer.DialContext(ctx, "unix", socketAddr)
 				},
 			},
 		}
-		hc := &httpClient{Client: client}
+		hc := &httpClient{Client: client, socketAddr: socketAddr}
 		setBasicAuth(hc)
 		return hc, nil
 	} else {
@@ -82,6 +83,14 @@ func newHTTPClient() (*httpClient, error) {
 		hc := &httpClient{Client: &http.Client{}, u: u}
 		setBasicAuth(hc)
 		return hc, nil
+	}
+}
+
+func (hc *httpClient) String() string {
+	if hc.u == nil {
+		return "unix: " + hc.socketAddr
+	} else {
+		return hc.u.String()
 	}
 }
 
