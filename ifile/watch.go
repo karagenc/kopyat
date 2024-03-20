@@ -139,7 +139,7 @@ func (j *WatchJob) Run() error {
 
 outer:
 	for {
-		watcher, c, err := watch(j.scanPath)
+		watcher, eventChan, err := watch(j.scanPath)
 		if err != nil {
 			j.logError(err)
 			j.sleepBeforeRetry(1)
@@ -155,7 +155,7 @@ outer:
 
 		for {
 			select {
-			case path := <-c:
+			case path := <-eventChan:
 				j.logS.Debugf("event received. path: %s", path)
 				err := j.walk()
 				if err != nil {
@@ -166,9 +166,22 @@ outer:
 						j.fail()
 						return err
 					}
+					watcher.Close()
 					continue outer
 				}
 				last = time.Now()
+			case err, ok := <-watcher.Errors:
+				if ok {
+					j.logError(err)
+					j.sleepBeforeRetry(1)
+					// Time since first attempt or last successful walk
+					if time.Since(last).Seconds() >= failAfter {
+						j.fail()
+						return err
+					}
+					watcher.Close()
+					continue outer
+				}
 			case <-j.stopped:
 				watcher.Close()
 				return nil
@@ -201,38 +214,31 @@ func (j *WatchJob) Shutdown() error {
 	return nil
 }
 
-func watch(path string) (*fsnotify.Watcher, <-chan string, error) {
-	watcher, err := fsnotify.NewWatcher()
+func watch(path string) (watcher *fsnotify.Watcher, eventChan chan string, err error) {
+	watcher, err = fsnotify.NewWatcher()
 	if err != nil {
-		return nil, nil, err
+		return
 	}
 
-	c := make(chan string, 1)
+	eventChan = make(chan string, 1)
 	go func() {
 		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					return
-				}
-				if event.Has(fsnotify.Create) {
-					if st, err := os.Stat(event.Name); err == nil {
-						if st.IsDir() {
-							watcher.Add(event.Name)
-						}
-					}
-					c <- event.Name
-				} else if event.Has(fsnotify.Write) {
-					base := filepath.Base(event.Name)
-					if base == gitignore || base == csignore {
-						c <- event.Name
+			event, ok := <-watcher.Events
+			if !ok {
+				return
+			}
+			if event.Has(fsnotify.Create) {
+				if st, err := os.Stat(event.Name); err == nil {
+					if st.IsDir() {
+						watcher.Add(event.Name)
 					}
 				}
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					return
+				eventChan <- event.Name
+			} else if event.Has(fsnotify.Write) {
+				base := filepath.Base(event.Name)
+				if base == gitignore || base == csignore {
+					eventChan <- event.Name
 				}
-
 			}
 		}
 	}()
@@ -246,9 +252,5 @@ func watch(path string) (*fsnotify.Watcher, <-chan string, error) {
 		}
 		return nil
 	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return watcher, c, nil
+	return
 }
