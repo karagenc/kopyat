@@ -60,7 +60,7 @@ var backupCmd = &cobra.Command{
 			}
 			g := &errgroup.Group{}
 			for i, hook := range hooks {
-				utils.Bold.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
+				utils.Bold.Printf("\nRunning hook %d of %d: %s\n\n", i+1, len(hooks), hook)
 				err := runHook(g, hook)
 				if err != nil {
 					exit(fmt.Errorf("pre hook failed: %v: exiting.", err), nil)
@@ -103,7 +103,7 @@ var backupCmd = &cobra.Command{
 
 			g := &errgroup.Group{}
 			for i, hook := range hooks {
-				utils.Bold.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
+				utils.Bold.Printf("\nRunning hook %d of %d: %s\n\n", i+1, len(hooks), hook)
 				err := runHook(g, hook)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "Post hook failed: %v\n", err)
