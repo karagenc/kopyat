@@ -134,7 +134,7 @@ func exit(err error, code *int) {
 		f()
 	}
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "%s\n", utils.Red.Sprintf("Error: %v", err))
 		if code != nil {
 			os.Exit(*code)
 		} else {

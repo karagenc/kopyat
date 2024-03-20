@@ -232,7 +232,7 @@ func watch(path string) (*fsnotify.Watcher, <-chan string, error) {
 				if !ok {
 					return
 				}
-				fmt.Fprintf(os.Stderr, "Event error: %v\n", err)
+
 			}
 		}
 	}()

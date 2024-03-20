@@ -60,7 +60,9 @@ var backupCmd = &cobra.Command{
 			}
 			g := &errgroup.Group{}
 			for i, hook := range hooks {
-				utils.Bold.Printf("\nRunning hook %d of %d: %s\n\n", i+1, len(hooks), hook)
+				fmt.Println()
+				utils.Bold.Printf("Running hook %d of %d: %s", i+1, len(hooks), hook)
+				fmt.Print("\n\n")
 				err := runHook(g, hook)
 				if err != nil {
 					exit(fmt.Errorf("pre hook failed: %v: exiting.", err), nil)
@@ -103,16 +105,17 @@ var backupCmd = &cobra.Command{
 
 			g := &errgroup.Group{}
 			for i, hook := range hooks {
-				utils.Bold.Printf("\nRunning hook %d of %d: %s\n\n", i+1, len(hooks), hook)
+				utils.Bold.Printf("\nRunning hook %d of %d: %s", i+1, len(hooks), hook)
+				fmt.Print("\n\n")
 				err := runHook(g, hook)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Post hook failed: %v\n", err)
+					fmt.Fprintf(os.Stderr, "%s\n", utils.Red.Sprintf("Post hook failed: %v", err))
 					postHookFail = true
 				}
 			}
 			err = g.Wait()
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Post hook failed: %v\n", err)
+				fmt.Fprintf(os.Stderr, "%s\n", utils.Red.Sprintf("Post hook failed: %v", err))
 				postHookFail = true
 			}
 		}
@@ -130,7 +133,7 @@ func remindAll(reminders []string) {
 		return
 	}
 	utils.BgWhite.Print("Reminders — Hit 'Enter' after completing each task.")
-	fmt.Print("\n\n")
+	fmt.Print("\n")
 	for _, reminder := range reminders {
 		fmt.Printf("    %s", reminder)
 		bufio.NewReader(os.Stdin).ReadBytes('\n')

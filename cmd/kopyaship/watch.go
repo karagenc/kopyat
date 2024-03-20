@@ -8,6 +8,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 	"github.com/tomruk/kopyaship/ifile"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 var (
@@ -44,7 +45,7 @@ var (
 			for _, info := range infos {
 				e := ""
 				for i, err := range info.Errors {
-					e += err
+					e += utils.Red.Sprint(err)
 					if i != len(info.Errors)-1 {
 						e += "\n"
 					}
