@@ -8,6 +8,7 @@ import (
 	"strings"
 	"syscall"
 
+	"go.uber.org/zap"
 	"golang.org/x/term"
 
 	"github.com/docker/go-units"
@@ -21,7 +22,7 @@ type (
 
 	Backup struct {
 		isDaemon bool
-		log      utils.Logger
+		log      *zap.Logger
 
 		Name     string
 		Provider provider.Provider
@@ -34,7 +35,7 @@ type (
 	}
 )
 
-func FromConfig(ctx context.Context, config *config.Config, cacheDir string, log utils.Logger, isDaemon bool, include ...string) (backups Backups, err error) {
+func FromConfig(ctx context.Context, config *config.Config, cacheDir string, log *zap.Logger, isDaemon bool, include ...string) (backups Backups, err error) {
 	backups = make(Backups)
 
 	if len(include) > 0 {
@@ -79,7 +80,7 @@ func FromConfig(ctx context.Context, config *config.Config, cacheDir string, log
 	return
 }
 
-func fromConfig(ctx context.Context, backupConfig *config.Backup, cacheDir string, log utils.Logger, isDaemon bool) (backup *Backup, skip bool, err error) {
+func fromConfig(ctx context.Context, backupConfig *config.Backup, cacheDir string, log *zap.Logger, isDaemon bool) (backup *Backup, skip bool, err error) {
 	backup = &Backup{
 		isDaemon:      isDaemon,
 		log:           log,
@@ -90,7 +91,7 @@ func fromConfig(ctx context.Context, backupConfig *config.Backup, cacheDir strin
 	}
 
 	if backup.skipOS() {
-		log.Infof("Skipping backup %s, due to unmatched OS: %s\n", backup.Name, backup.IfOSIs)
+		log.Sugar().Infof("Skipping backup %s, due to unmatched OS: %s", backup.Name, backup.IfOSIs)
 		skip = true
 		return
 	}
@@ -149,7 +150,7 @@ func (b *Backup) Do() error {
 		}
 
 		for _, path := range paths {
-			b.log.Infof("Backing up: %s\n", path)
+			b.log.Sugar().Infof("Backing up: %s", path)
 			err := b.Provider.Backup(path)
 			if err != nil {
 				return err
@@ -175,7 +176,7 @@ func (b *Backup) Do() error {
 		}
 		if size > b.WarnSize {
 			humanSize := units.BytesSize(float64(b.WarnSize))
-			b.log.Warnf("\nSize of the backup %s has become larger than %s\n\n", b.Name, humanSize)
+			b.log.Sugar().Warnf("Size of the backup %s has become larger than %s", b.Name, humanSize)
 		}
 	}
 	return nil

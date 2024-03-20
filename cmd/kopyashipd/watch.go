@@ -86,7 +86,7 @@ func (v *svice) initWatchJobsFromConfig() (jobs []*ifile.WatchJob, err error) {
 			return nil, fmt.Errorf("invalid 'for': %s", run.For)
 		}
 
-		j := ifile.NewWatchJob(v._log, run.Ifile, mode, runPreHooks, runPostHooks)
+		j := ifile.NewWatchJob(run.Ifile, mode, runPreHooks, runPostHooks, v.log)
 
 		jobs = append(jobs, j)
 		v.jobsMu.Lock()

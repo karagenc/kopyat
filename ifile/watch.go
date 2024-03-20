@@ -9,14 +9,15 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/tomruk/kopyaship/utils"
+	"go.uber.org/zap"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 type (
 	WatchJob struct {
-		log     utils.Logger
+		log     *zap.Logger
+		logS    *zap.SugaredLogger
 		status  atomic.Int32
 		stopped chan struct{}
 		errs    chan error
@@ -61,7 +62,7 @@ func (s WatchJobStatus) String() string {
 	}
 }
 
-func NewWatchJob(log utils.Logger, ifile string, mode Mode, runPreHooks, runPostHooks func() error) *WatchJob {
+func NewWatchJob(ifile string, mode Mode, runPreHooks, runPostHooks func() error, log *zap.Logger) *WatchJob {
 	if runPreHooks == nil {
 		runPreHooks = func() error { return nil }
 	}
@@ -71,6 +72,7 @@ func NewWatchJob(log utils.Logger, ifile string, mode Mode, runPreHooks, runPost
 
 	j := &WatchJob{
 		log:      log,
+		logS:     log.Sugar(),
 		status:   atomic.Int32{},
 		stopped:  make(chan struct{}),
 		errs:     make(chan error, 5),
@@ -83,7 +85,7 @@ func NewWatchJob(log utils.Logger, ifile string, mode Mode, runPreHooks, runPost
 	j.walk = func() error {
 		err := runPreHooks()
 		if err != nil {
-			log.Errorf("One of the prehooks has failed: %v", err)
+			j.logS.Errorf("One of the prehooks has failed: %v", err)
 		}
 		i, err := New(j.ifile, j.mode, true, j.log)
 		if err != nil {
@@ -93,7 +95,7 @@ func NewWatchJob(log utils.Logger, ifile string, mode Mode, runPreHooks, runPost
 		walkErr := i.Walk(j.scanPath)
 		err = runPostHooks()
 		if err != nil {
-			log.Errorf("One of the posthooks has failed: %v", err)
+			j.logS.Errorf("One of the posthooks has failed: %v", err)
 		}
 		return walkErr
 	}
@@ -154,7 +156,7 @@ outer:
 		for {
 			select {
 			case path := <-c:
-				j.log.Debugf("event received. path: %s\n", path)
+				j.logS.Debugf("event received. path: %s", path)
 				err := j.walk()
 				if err != nil {
 					j.logError(err)
@@ -188,7 +190,7 @@ func (j *WatchJob) logError(err error) {
 
 func (j *WatchJob) sleepBeforeRetry(seconds time.Duration) {
 	time.Sleep(seconds * time.Second)
-	j.log.Infoln("retry in %d second(s)", seconds)
+	j.logS.Info("retry in %d second(s)", seconds)
 }
 
 func (j *WatchJob) fail() { j.status.Store(int32(WatchJobStatusFailed)) }

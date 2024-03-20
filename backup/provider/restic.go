@@ -8,12 +8,13 @@ import (
 	"path/filepath"
 
 	"github.com/mattn/go-shellwords"
-	"github.com/tomruk/kopyaship/utils"
+	"go.uber.org/zap"
 )
 
 type Restic struct {
-	ctx context.Context
-	log utils.Logger
+	ctx  context.Context
+	log  *zap.Logger
+	logS *zap.SugaredLogger
 
 	repoPath  string
 	extraArgs string
@@ -21,10 +22,11 @@ type Restic struct {
 	password  string
 }
 
-func NewRestic(ctx context.Context, repoPath, extraArgs, password string, sudo bool, log utils.Logger) *Restic {
+func NewRestic(ctx context.Context, repoPath, extraArgs, password string, sudo bool, log *zap.Logger) *Restic {
 	return &Restic{
 		ctx:       ctx,
 		log:       log,
+		logS:      log.Sugar(),
 		repoPath:  filepath.ToSlash(repoPath),
 		extraArgs: extraArgs,
 		sudo:      sudo,
@@ -69,7 +71,7 @@ func (r *Restic) run(command string) error {
 	if r.sudo {
 		command = "sudo " + command
 	}
-	r.log.Infof("Running: %s\n", command)
+	r.logS.Infof("Running: %s", command)
 	if r.password != "" {
 		os.Setenv("RESTIC_PASSWORD", r.password)
 		defer os.Unsetenv("RESTIC_PASSWORD")

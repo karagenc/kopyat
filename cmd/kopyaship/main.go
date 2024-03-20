@@ -14,13 +14,14 @@ import (
 	"github.com/spf13/viper"
 	_config "github.com/tomruk/kopyaship/config"
 	"github.com/tomruk/kopyaship/utils"
+	"go.uber.org/zap"
 )
 
 var (
 	cacheDir string
 	config   *_config.Config
 	v        *viper.Viper
-	log      = utils.NewCLILogger(false)
+	log      *zap.Logger
 
 	rootCmd = &cobra.Command{Use: "kopyaship"}
 
@@ -55,10 +56,12 @@ func init() {
 	watchCmd.AddCommand(watchListCmd)
 
 	rootCmd.PersistentFlags().StringP("config", "c", "", "Configuration file")
+	rootCmd.PersistentFlags().Bool("enable-log", false, "Enable logging to stdout")
 
 	cobra.OnInitialize(func() {
 		systemWide := initConfig()
 		initCache(systemWide)
+		initLogging()
 		config.PlaceEnvironmentVariables()
 		err := config.Check()
 		if err != nil {
@@ -102,6 +105,19 @@ func initCache(systemWide bool) {
 		if err != nil {
 			exit(fmt.Errorf("could not create the cache directory: %v", err), nil)
 		}
+	}
+}
+
+func initLogging() {
+	enable, _ := rootCmd.PersistentFlags().GetBool("enable-log")
+	if enable {
+		var err error
+		log, err = newLogger()
+		if err != nil {
+			exit(fmt.Errorf("could not create a new logger: %v", err), nil)
+		}
+	} else {
+		log = zap.NewNop()
 	}
 }
 

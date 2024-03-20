@@ -10,12 +10,15 @@ import (
 	"sync"
 
 	pathspec "github.com/tomruk/go-pathspec"
-	"github.com/tomruk/kopyaship/utils"
+	"go.uber.org/zap"
 )
 
 type (
 	Ifile struct {
-		mode  Mode
+		log  *zap.Logger
+		logS *zap.SugaredLogger
+		mode Mode
+
 		buf   bytes.Buffer
 		bufMu sync.Mutex
 		end   []byte
@@ -63,8 +66,10 @@ const (
 	endIndicator   = "# I_END"
 )
 
-func New(filePath string, mode Mode, appendToExisting bool, log utils.Logger) (ifile *Ifile, err error) {
+func New(filePath string, mode Mode, appendToExisting bool, log *zap.Logger) (ifile *Ifile, err error) {
 	ifile = &Ifile{
+		log:      log,
+		logS:     log.Sugar(),
 		mode:     mode,
 		filePath: filePath,
 	}
@@ -120,6 +125,8 @@ func (i *Ifile) seekToEnd() error {
 		return fmt.Errorf("ifile end indicator ('%s') not found", endIndicator)
 	}
 
+	i.logS.Debugf("ifile: %s: begin %d, end %d", i.filePath, begin, end)
+
 	// To apply potential newline seperator change.
 	_, err = i.file.Seek(0, io.SeekStart)
 	if err != nil {
@@ -163,10 +170,13 @@ func (i *Ifile) Close() (err error) {
 		err2 error
 	)
 	i.once.Do(func() {
+		i.logS.Debugf("ifile: %s: writing i.buf", i.filePath)
 		_, err1 = i.file.Write(i.buf.Bytes())
 		if len(i.end) != 0 {
+			i.logS.Debugf("ifile: %s: writing i.end", i.filePath)
 			_, err2 = i.file.Write(i.end)
 		} else {
+			i.logS.Debugf("ifile: %s: writing newline", i.filePath)
 			_, err2 = i.file.WriteString("\n")
 		}
 		i.file.Close()
@@ -174,8 +184,10 @@ func (i *Ifile) Close() (err error) {
 
 	// Prioritize err1
 	if err1 != nil {
+		i.logS.Debugf("ifile: %s: err1 occured", i.filePath)
 		err = err1
 	} else if err2 != nil {
+		i.logS.Debugf("ifile: %s: err2 occured", i.filePath)
 		err = err2
 	}
 	return

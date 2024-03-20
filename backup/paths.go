@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tomruk/kopyaship/utils"
+	"go.uber.org/zap"
 )
 
 type paths struct {
-	log      utils.Logger
+	log      *zap.Logger
 	cacheDir string
 
 	backup *Backup
