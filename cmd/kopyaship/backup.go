@@ -11,6 +11,8 @@ import (
 	"github.com/tomruk/kopyaship/backup"
 	"github.com/tomruk/kopyaship/scripting"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/fatih/color"
 )
 
 func init() {
@@ -57,7 +59,7 @@ var backupCmd = &cobra.Command{
 			}
 			g := &errgroup.Group{}
 			for i, hook := range hooks {
-				fmt.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
+				bold.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
 				err := runHook(g, hook)
 				if err != nil {
 					exit(fmt.Errorf("pre hook failed: %v: exiting.", err), nil)
@@ -84,7 +86,10 @@ var backupCmd = &cobra.Command{
 					reminders = append(reminders, backup.Reminders.Post...)
 				}
 			}
-			remindAll(reminders)
+			if len(reminders) > 0 {
+				fmt.Println()
+				remindAll(reminders)
+			}
 		}
 		if !noHook {
 			hooks := config.Backups.Hooks.Post
@@ -97,7 +102,7 @@ var backupCmd = &cobra.Command{
 
 			g := &errgroup.Group{}
 			for i, hook := range hooks {
-				fmt.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
+				bold.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
 				err := runHook(g, hook)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "Post hook failed: %v\n", err)
@@ -112,9 +117,9 @@ var backupCmd = &cobra.Command{
 		}
 
 		if postHookFail {
-			fmt.Println("Backup successful with at least 1 post hook failure.\nConsider running failed scripts by hand.")
+			color.Red("\nBackup successful with at least 1 post hook failure.\nConsider running failed scripts by hand.")
 		} else {
-			fmt.Println("Backup successful")
+			color.HiGreen("\nBackup successful")
 		}
 	},
 }
@@ -123,12 +128,12 @@ func remindAll(reminders []string) {
 	if len(reminders) == 0 {
 		return
 	}
-	fmt.Printf("Reminders — Hit 'Enter' after completing each task.\n\n")
+	bgWhite.Print("Reminders — Hit 'Enter' after completing each task.\n\n")
 	for _, reminder := range reminders {
 		fmt.Printf("    %s", reminder)
 		bufio.NewReader(os.Stdin).ReadBytes('\n')
 	}
-	fmt.Printf("\n")
+	fmt.Println()
 }
 
 func runHook(g *errgroup.Group, command string) error {

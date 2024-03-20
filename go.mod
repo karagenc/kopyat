@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	github.com/docker/go-units v0.5.0
+	github.com/fatih/color v1.16.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gofrs/flock v0.8.1
 	github.com/jedib0t/go-pretty/v6 v6.5.4

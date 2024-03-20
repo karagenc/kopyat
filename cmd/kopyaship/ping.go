@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +15,7 @@ var pingCmd = &cobra.Command{
 		if err != nil {
 			exit(err, nil)
 		}
-		fmt.Println("Pong!")
+		color.HiGreen("Pong!")
 	},
 }
 
