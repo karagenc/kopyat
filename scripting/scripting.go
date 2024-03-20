@@ -41,15 +41,13 @@ func NewScript(ctx context.Context, command string) (script Script, err error) {
 		default:
 			var stat fs.FileInfo
 			stat, err = os.Stat(bin)
-			if err != nil {
-				break
-			}
-			if stat.IsDir() {
+			if err == nil && stat.IsDir() {
 				err = fmt.Errorf("reading scripts from directories is not supported at the moment")
 				break
 			} else {
-				script = newExec(ctx, sw...)
+				err = nil
 			}
+			script = newExec(ctx, sw...)
 		}
 	} else {
 		bin := sw[0]
@@ -69,15 +67,13 @@ func NewScript(ctx context.Context, command string) (script Script, err error) {
 		default:
 			var stat fs.FileInfo
 			stat, err = os.Stat(bin)
-			if err != nil {
-				break
-			}
-			if stat.IsDir() {
+			if err == nil && stat.IsDir() {
 				err = fmt.Errorf("reading scripts from directories is not supported at the moment")
 				break
 			} else {
-				script = newExec(ctx, sw...)
+				err = nil
 			}
+			script = newExec(ctx, sw...)
 		}
 	}
 
