@@ -238,3 +238,31 @@ func TestWatchFail(t *testing.T) {
 	err = j.Shutdown()
 	require.NoError(t, err)
 }
+
+func TestWatchFailImmediately(t *testing.T) {
+	os.Remove(testIfile)
+	os.Remove("test_txtfile")
+
+	runHooks := func() error { return fmt.Errorf("nothing") } // Just so that coverage is triggered.
+	j := NewWatchJob(testIfile, ModeSyncthing, runHooks, runHooks, utils.MustNewDebugLogger())
+
+	var (
+		walkCount = 0
+		mu        sync.Mutex
+	)
+
+	j.walk = func() error {
+		mu.Lock()
+		walkCount++
+		mu.Unlock()
+		return fmt.Errorf("test walk error")
+	}
+
+	err := j.Run()
+	require.Error(t, err)
+
+	require.Equal(t, j.Status(), WatchJobStatusFailed)
+
+	require.Equal(t, j.Ifile(), j.ifile)       // Just so that coverage is triggered.
+	require.Equal(t, j.ScanPath(), j.scanPath) // Just so that coverage is triggered.
+}
