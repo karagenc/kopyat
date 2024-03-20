@@ -16,7 +16,7 @@ var initCmd = &cobra.Command{
 
 		ctx, cancel := context.WithCancel(context.Background())
 		addExitHandler(cancel)
-		backups, err := backup.FromConfig(ctx, config, cacheDir, log, false, include...)
+		backups, err := backup.FromConfig(ctx, &config.Backups, cacheDir, log, false, include...)
 		if err != nil {
 			exit(err, nil)
 		}

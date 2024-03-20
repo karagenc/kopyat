@@ -35,13 +35,13 @@ type (
 	}
 )
 
-func FromConfig(ctx context.Context, config *config.Config, cacheDir string, log *zap.Logger, isDaemon bool, include ...string) (backups Backups, err error) {
+func FromConfig(ctx context.Context, configBackups *config.Backups, cacheDir string, log *zap.Logger, isDaemon bool, include ...string) (backups Backups, err error) {
 	backups = make(Backups)
 
 	if len(include) > 0 {
 		for _, include := range include {
 			found := false
-			for _, backupConfig := range config.Backups.Run {
+			for _, backupConfig := range configBackups.Run {
 				if backupConfig.Name == include {
 					found = true
 				}
@@ -52,7 +52,7 @@ func FromConfig(ctx context.Context, config *config.Config, cacheDir string, log
 		}
 	}
 
-	for _, backupConfig := range config.Backups.Run {
+	for _, backupConfig := range configBackups.Run {
 		if strings.TrimSpace(backupConfig.Name) == "" {
 			return nil, fmt.Errorf("no name given to the backup configuration")
 		}
