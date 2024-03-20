@@ -8,7 +8,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/fatih/color"
 	"github.com/kirsle/configdir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -24,10 +23,6 @@ var (
 	log      *zap.Logger
 
 	rootCmd = &cobra.Command{Use: "kopyaship"}
-
-	bgWhite = color.New(color.FgBlack, color.BgWhite)
-	bold    = color.New(color.Bold)
-	warn    = color.New(color.FgYellow)
 )
 
 func main() { rootCmd.Execute() }

@@ -150,7 +150,12 @@ func (b *Backup) Do() error {
 		}
 
 		for _, path := range paths {
-			b.log.Sugar().Infof("Backing up: %s", path)
+			b.log.Sugar().Infof("Backup: %s", path)
+			if !b.isDaemon {
+				fmt.Println()
+				utils.BgBlue.Printf("Backup: %s", path)
+				fmt.Println()
+			}
 			err := b.Provider.Backup(path)
 			if err != nil {
 				return err

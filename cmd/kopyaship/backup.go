@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tomruk/kopyaship/backup"
 	"github.com/tomruk/kopyaship/scripting"
+	"github.com/tomruk/kopyaship/utils"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/fatih/color"
@@ -59,7 +60,7 @@ var backupCmd = &cobra.Command{
 			}
 			g := &errgroup.Group{}
 			for i, hook := range hooks {
-				bold.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
+				utils.Bold.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
 				err := runHook(g, hook)
 				if err != nil {
 					exit(fmt.Errorf("pre hook failed: %v: exiting.", err), nil)
@@ -102,7 +103,7 @@ var backupCmd = &cobra.Command{
 
 			g := &errgroup.Group{}
 			for i, hook := range hooks {
-				bold.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
+				utils.Bold.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
 				err := runHook(g, hook)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "Post hook failed: %v\n", err)
@@ -128,7 +129,8 @@ func remindAll(reminders []string) {
 	if len(reminders) == 0 {
 		return
 	}
-	bgWhite.Print("Reminders — Hit 'Enter' after completing each task.\n\n")
+	utils.BgWhite.Print("Reminders — Hit 'Enter' after completing each task.")
+	fmt.Print("\n\n")
 	for _, reminder := range reminders {
 		fmt.Printf("    %s", reminder)
 		bufio.NewReader(os.Stdin).ReadBytes('\n')

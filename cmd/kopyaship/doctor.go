@@ -6,19 +6,20 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 var doctorCmd = &cobra.Command{
 	Use: "doctor",
 	Run: func(cmd *cobra.Command, args []string) {
 		errorFound := false
-		bold.Println("Doctor:")
+		utils.Bold.Println("Doctor:")
 
 		fmt.Printf("    Using configuration file: %s\n", v.ConfigFileUsed())
 
 		restic, err := exec.LookPath("restic")
 		if err != nil {
-			warn.Print("    Warning: ")
+			utils.Warn.Print("    Warning: ")
 			fmt.Printf("restic not found: %v\n", err)
 			errorFound = true
 		} else {
