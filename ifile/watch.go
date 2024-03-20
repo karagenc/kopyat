@@ -61,7 +61,14 @@ func (s WatchJobStatus) String() string {
 	}
 }
 
-func NewWatchJob(log utils.Logger, ifile string, mode Mode) *WatchJob {
+func NewWatchJob(log utils.Logger, ifile string, mode Mode, runPreHooks, runPostHooks func() error) *WatchJob {
+	if runPreHooks == nil {
+		runPreHooks = func() error { return nil }
+	}
+	if runPostHooks == nil {
+		runPostHooks = func() error { return nil }
+	}
+
 	j := &WatchJob{
 		log:      log,
 		status:   atomic.Int32{},
@@ -71,15 +78,25 @@ func NewWatchJob(log utils.Logger, ifile string, mode Mode) *WatchJob {
 		ifile:    ifile,
 		mode:     mode,
 	}
+	j.status.Store(int32(WatchJobStatusWillRun))
+
 	j.walk = func() error {
+		err := runPreHooks()
+		if err != nil {
+			log.Errorf("One of the prehooks has failed: %v", err)
+		}
 		i, err := New(j.ifile, j.mode, true, j.log)
 		if err != nil {
 			return err
 		}
 		defer i.Close()
-		return i.Walk(j.scanPath)
+		walkErr := i.Walk(j.scanPath)
+		err = runPostHooks()
+		if err != nil {
+			log.Errorf("One of the posthooks has failed: %v", err)
+		}
+		return walkErr
 	}
-	j.status.Store(int32(WatchJobStatusWillRun))
 	return j
 }
 

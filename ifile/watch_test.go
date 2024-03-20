@@ -17,7 +17,7 @@ func TestWatch(t *testing.T) {
 
 	defer os.Remove(testIfile)
 
-	j := NewWatchJob(utils.NewCLILogger(true), testIfile, ModeSyncthing)
+	j := NewWatchJob(utils.NewCLILogger(true), testIfile, ModeSyncthing, nil, nil)
 
 	var (
 		walk      = j.walk
@@ -86,7 +86,7 @@ func TestWatchIgnore(t *testing.T) {
 	defer os.Remove("test_txtfile")
 	defer os.Remove(".gitignore")
 
-	j := NewWatchJob(utils.NewCLILogger(true), testIfile, ModeSyncthing)
+	j := NewWatchJob(utils.NewCLILogger(true), testIfile, ModeSyncthing, nil, nil)
 
 	var (
 		walk      = j.walk

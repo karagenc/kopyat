@@ -42,6 +42,9 @@ type svice struct {
 
 	once    sync.Once
 	errChan <-chan error
+
+	exitHandlers   []func()
+	exitHandlersMu sync.Mutex
 }
 
 func (v *svice) Start(s service.Service) (err error) {
@@ -201,5 +204,17 @@ func (v *svice) Stop(s service.Service) (err error) {
 			err = jobErr
 		}
 	}
+
+	v.exitHandlersMu.Lock()
+	defer v.exitHandlersMu.Unlock()
+	for _, f := range v.exitHandlers {
+		f()
+	}
 	return
+}
+
+func (v *svice) addExitHandler(f func()) {
+	v.exitHandlersMu.Lock()
+	v.exitHandlers = append(v.exitHandlers, f)
+	v.exitHandlersMu.Unlock()
 }
