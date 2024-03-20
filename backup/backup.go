@@ -132,19 +132,22 @@ func (b *Backup) skipOS() bool {
 
 func (b *Backup) Do() error {
 	if !b.GenerateIfile {
-		_, isRestic := b.Provider.(*provider.Restic)
-		if !b.isDaemon && isRestic && !b.Provider.PasswordIsSet() {
-			fmt.Printf("Enter password for the repository: %s: ", b.Provider.TargetLocation())
-			password, err := term.ReadPassword(syscall.Stdin)
-			fmt.Println()
-			if err != nil {
-				return err
+		paths := b.Paths.Paths()
+
+		if len(paths) > 1 {
+			_, isRestic := b.Provider.(*provider.Restic)
+			if !b.isDaemon && isRestic && !b.Provider.PasswordIsSet() {
+				fmt.Printf("Enter password for the repository %s: ", b.Provider.TargetLocation())
+				password, err := term.ReadPassword(syscall.Stdin)
+				fmt.Println()
+				if err != nil {
+					return err
+				}
+				os.Setenv("RESTIC_PASSWORD", string(password))
+				defer os.Unsetenv("RESTIC_PASSWORD")
 			}
-			os.Setenv("RESTIC_PASSWORD", string(password))
-			defer os.Unsetenv("RESTIC_PASSWORD")
 		}
 
-		paths := b.Paths.Paths()
 		for _, path := range paths {
 			b.log.Infof("Backing up: %s\n", path)
 			err := b.Provider.Backup(path)
