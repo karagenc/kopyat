@@ -5,9 +5,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/tomruk/kopyaship/backup"
+	"github.com/tomruk/kopyaship/scripting"
+	"golang.org/x/sync/errgroup"
 )
 
 func init() {
@@ -51,14 +54,18 @@ var backupCmd = &cobra.Command{
 					hooks = append(hooks, backup.Hooks.Pre...)
 				}
 			}
+			g := &errgroup.Group{}
 			for i, hook := range hooks {
 				fmt.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
-				err := runHook(hook)
+				err := runHook(g, hook)
 				if err != nil {
 					exit(fmt.Errorf("pre hook failed: %v: exiting.", err), nil)
 				}
 			}
-
+			err = g.Wait()
+			if err != nil {
+				exit(fmt.Errorf("pre hook failed: %v: exiting.", err), nil)
+			}
 		}
 
 		for _, backup := range backups {
@@ -86,13 +93,20 @@ var backupCmd = &cobra.Command{
 					hooks = append(hooks, backup.Hooks.Post...)
 				}
 			}
+
+			g := &errgroup.Group{}
 			for i, hook := range hooks {
 				fmt.Printf("\nRunning hook %d of %d: %s\n\n", i, len(hooks), hook)
-				err := runHook(hook)
+				err := runHook(g, hook)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "Post hook failed: %v\n", err)
 					postHookFail = true
 				}
+			}
+			err = g.Wait()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Post hook failed: %v\n", err)
+				postHookFail = true
 			}
 		}
 
@@ -116,4 +130,24 @@ func remindAll(reminders []string) {
 	fmt.Printf("\n")
 }
 
-func runHook(script string) error { return nil }
+func runHook(g *errgroup.Group, command string) error {
+	goroutine := false
+	if strings.HasPrefix(command, "go ") {
+		command = command[3:]
+		goroutine = true
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	addExitHandler(cancel)
+	script, err := scripting.NewScript(ctx, command)
+	if err != nil {
+		return err
+	}
+
+	if goroutine {
+		g.Go(script.Run)
+		return nil
+	} else {
+		return script.Run()
+	}
+}

@@ -101,21 +101,20 @@ func initCache(systemWide bool) {
 }
 
 var (
-	exitFuncs   []func()
-	exitFuncsMu sync.Mutex
+	exitHandlers   []func()
+	exitHandlersMu sync.Mutex
 )
 
 func addExitHandler(f func()) {
-	exitFuncsMu.Lock()
-	exitFuncs = append(exitFuncs, f)
-	exitFuncsMu.Unlock()
+	exitHandlersMu.Lock()
+	exitHandlers = append(exitHandlers, f)
+	exitHandlersMu.Unlock()
 }
 
 func exit(err error, code *int) {
-	exitFuncsMu.Lock()
-	exitFuncs := exitFuncs
-	exitFuncsMu.Unlock()
-	for _, f := range exitFuncs {
+	exitHandlersMu.Lock()
+	defer exitHandlersMu.Unlock()
+	for _, f := range exitHandlers {
 		f()
 	}
 	if err != nil {
