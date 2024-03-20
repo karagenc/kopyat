@@ -1,11 +1,19 @@
-package main
+package utils
 
 import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func newLogger() (*zap.Logger, error) {
+func MustNewDebugLogger() *zap.Logger {
+	log, err := NewDebugLogger()
+	if err != nil {
+		panic(err)
+	}
+	return log
+}
+
+func NewDebugLogger() (*zap.Logger, error) {
 	level := zap.NewAtomicLevelAt(zap.DebugLevel)
 	development := true
 

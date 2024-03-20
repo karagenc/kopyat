@@ -7,12 +7,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 func TestSyncthingWalkInCurrentProject(t *testing.T) {
 	os.Remove(testIfile)
-	i, err := New(testIfile, ModeSyncthing, true, zap.NewNop())
+	i, err := New(testIfile, ModeSyncthing, true, utils.MustNewDebugLogger())
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -41,7 +41,7 @@ func TestSyncthingWalkInCurrentProject(t *testing.T) {
 // Ensure the root path doesn't appear in ifile.
 func TestSyncthingWalkNoRootMatchesInCurrentProject(t *testing.T) {
 	os.Remove(testIfile)
-	i, err := New(testIfile, ModeSyncthing, true, zap.NewNop())
+	i, err := New(testIfile, ModeSyncthing, true, utils.MustNewDebugLogger())
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -68,7 +68,7 @@ func TestSyncthingWalkNoRootMatchesInCurrentProject(t *testing.T) {
 
 func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
 	os.Remove(testIfile)
-	i, err := New(testIfile, ModeSyncthing, true, zap.NewNop())
+	i, err := New(testIfile, ModeSyncthing, true, utils.MustNewDebugLogger())
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -81,7 +81,7 @@ func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
 	err = i.Close()
 	require.NoError(t, err)
 
-	i, err = New(testIfile, ModeSyncthing, true, zap.NewNop())
+	i, err = New(testIfile, ModeSyncthing, true, utils.MustNewDebugLogger())
 	if err != nil {
 		require.NoError(t, err)
 	}
@@ -119,7 +119,7 @@ func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
 
 func TestResticWalkInCurrentProject(t *testing.T) {
 	os.Remove(testIfile)
-	i, err := New(testIfile, ModeRestic, false, zap.NewNop())
+	i, err := New(testIfile, ModeRestic, false, utils.MustNewDebugLogger())
 	if err != nil {
 		require.NoError(t, err)
 	}

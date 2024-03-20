@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 func TestWatch(t *testing.T) {
@@ -17,7 +17,7 @@ func TestWatch(t *testing.T) {
 
 	defer os.Remove(testIfile)
 
-	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
+	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, utils.MustNewDebugLogger())
 
 	var (
 		walk      = j.walk
@@ -86,7 +86,7 @@ func TestWatchIgnore(t *testing.T) {
 	defer os.Remove("test_txtfile")
 	defer os.Remove(".gitignore")
 
-	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
+	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, utils.MustNewDebugLogger())
 
 	var (
 		walk      = j.walk

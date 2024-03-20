@@ -51,7 +51,7 @@ func init() {
 	watchCmd.AddCommand(watchListCmd)
 
 	rootCmd.PersistentFlags().StringP("config", "c", "", "Configuration file")
-	rootCmd.PersistentFlags().Bool("enable-log", false, "Enable logging to stdout")
+	rootCmd.PersistentFlags().Bool("enable-log", false, "Enable logging to stdout. (For debugging purposes.)")
 
 	cobra.OnInitialize(func() {
 		systemWide := initConfig()
@@ -107,7 +107,7 @@ func initLogging() {
 	enable, _ := rootCmd.PersistentFlags().GetBool("enable-log")
 	if enable {
 		var err error
-		log, err = newLogger()
+		log, err = utils.NewDebugLogger()
 		if err != nil {
 			exit(fmt.Errorf("could not create a new logger: %v", err), nil)
 		}

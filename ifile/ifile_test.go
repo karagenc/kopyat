@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
+	"github.com/tomruk/kopyaship/utils"
 )
 
 var testIfile = func() string {
@@ -28,7 +28,7 @@ func TestIfileOverwrite(t *testing.T) {
 	))
 
 	os.Remove(testIfile)
-	i, err := New(testIfile, ModeSyncthing, false, zap.NewNop())
+	i, err := New(testIfile, ModeSyncthing, false, utils.MustNewDebugLogger())
 	require.NoError(t, err)
 
 	path, err := filepath.Abs("..")
@@ -43,7 +43,7 @@ func TestIfileOverwrite(t *testing.T) {
 
 	require.True(t, ifileFormRe.Match(content))
 
-	i, err = New(testIfile, ModeSyncthing, false, zap.NewNop())
+	i, err = New(testIfile, ModeSyncthing, false, utils.MustNewDebugLogger())
 	require.NoError(t, err)
 	err = i.Walk(path)
 	require.NoError(t, err)
@@ -72,7 +72,7 @@ func TestIfileAppend(t *testing.T) {
 	err := os.WriteFile(testIfile, content, 0644)
 	require.NoError(t, err)
 
-	i, err := New(testIfile, ModeSyncthing, true, zap.NewNop())
+	i, err := New(testIfile, ModeSyncthing, true, utils.MustNewDebugLogger())
 	require.NoError(t, err)
 
 	path, err := filepath.Abs("..")
@@ -87,7 +87,7 @@ func TestIfileAppend(t *testing.T) {
 
 	require.True(t, ifileFormRe.Match(content))
 
-	i, err = New(testIfile, ModeSyncthing, true, zap.NewNop())
+	i, err = New(testIfile, ModeSyncthing, true, utils.MustNewDebugLogger())
 	require.NoError(t, err)
 	err = i.Walk(path)
 	require.NoError(t, err)
@@ -126,7 +126,7 @@ func TestIfileAppend2(t *testing.T) {
 	err := os.WriteFile(testIfile, []byte(contentStart+contentMiddle+contentEnd), 0644)
 	require.NoError(t, err)
 
-	i, err := New(testIfile, ModeSyncthing, true, zap.NewNop())
+	i, err := New(testIfile, ModeSyncthing, true, utils.MustNewDebugLogger())
 	require.NoError(t, err)
 
 	path, err := filepath.Abs("..")
@@ -141,7 +141,7 @@ func TestIfileAppend2(t *testing.T) {
 
 	require.True(t, ifileFormRe.Match(content))
 
-	i, err = New(testIfile, ModeSyncthing, true, zap.NewNop())
+	i, err = New(testIfile, ModeSyncthing, true, utils.MustNewDebugLogger())
 	require.NoError(t, err)
 	err = i.Walk(path)
 	require.NoError(t, err)
