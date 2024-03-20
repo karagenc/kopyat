@@ -27,11 +27,12 @@ var backupCmd = &cobra.Command{
 			noRemind, _  = f.GetBool("no-remind")
 			noHook, _    = f.GetBool("no-hook")
 			postHookFail = false
+			include      = args
 		)
 
 		ctx, cancel := context.WithCancel(context.Background())
 		addExitHandler(cancel)
-		backups, err := backup.FromConfig(ctx, config, cacheDir, log, false)
+		backups, err := backup.FromConfig(ctx, config, cacheDir, log, false, include...)
 		if err != nil {
 			exit(err, nil)
 		}

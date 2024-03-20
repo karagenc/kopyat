@@ -12,9 +12,11 @@ import (
 var initCmd = &cobra.Command{
 	Use: "init",
 	Run: func(cmd *cobra.Command, args []string) {
+		include := args
+
 		ctx, cancel := context.WithCancel(context.Background())
 		addExitHandler(cancel)
-		backups, err := backup.FromConfig(ctx, config, cacheDir, log, false)
+		backups, err := backup.FromConfig(ctx, config, cacheDir, log, false, include...)
 		if err != nil {
 			exit(err, nil)
 		}
