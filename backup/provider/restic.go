@@ -37,12 +37,12 @@ func NewRestic(ctx context.Context, repoPath, extraArgs, password string, sudo b
 func (r *Restic) TargetLocation() string { return r.repoPath }
 
 func (r *Restic) Init() error {
-	return r.run(fmt.Sprintf("restic -r %s init", r.repoPath))
+	return r.run(fmt.Sprintf("restic -r '%s' init", r.repoPath))
 }
 
 func (r *Restic) Backup(path string) error {
 	path = filepath.ToSlash(path)
-	command := fmt.Sprintf("restic -r %s backup", r.repoPath)
+	command := fmt.Sprintf("restic -r '%s' backup", r.repoPath)
 	if r.extraArgs != "" {
 		command += " " + r.extraArgs
 	}
@@ -52,7 +52,7 @@ func (r *Restic) Backup(path string) error {
 
 func (r *Restic) BackupWithIfile(ifile string) error {
 	ifile = filepath.ToSlash(ifile)
-	command := fmt.Sprintf("restic -r %s backup", r.repoPath)
+	command := fmt.Sprintf("restic -r '%s' backup", r.repoPath)
 	if r.extraArgs != "" {
 		command += " " + r.extraArgs
 	}
