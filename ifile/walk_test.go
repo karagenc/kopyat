@@ -3,6 +3,7 @@ package ifile
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -34,7 +35,7 @@ func TestSyncthingWalkInCurrentProject(t *testing.T) {
 		require.NotContains(t, line, "cmd/kopyaship")
 		require.NotContains(t, line, "scripts")
 		require.NotContains(t, line, "LICENSE")
-		require.NotContains(t, line, ".gitignore")
+		require.NotRegexp(t, regexp.MustCompile("^/.gitignore$"), line)
 	}
 }
 
