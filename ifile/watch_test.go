@@ -9,14 +9,14 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/tomruk/kopyaship/utils"
+	"go.uber.org/zap"
 )
 
 func TestWatch(t *testing.T) {
 	os.Remove(testIfile)
 	os.Remove("test_txtfile")
 
-	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, utils.MustNewDebugLogger())
+	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
 
 	var (
 		walk      = j.walk
@@ -85,7 +85,7 @@ func TestWatchIgnore(t *testing.T) {
 	defer os.Remove("test_txtfile")
 	defer os.Remove(".gitignore")
 
-	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, utils.MustNewDebugLogger())
+	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
 
 	var (
 		walk      = j.walk
@@ -160,7 +160,7 @@ func TestWatchIgnoreNewlyCreatedDir(t *testing.T) {
 	defer os.RemoveAll("testdir")
 	defer os.Remove(".gitignore")
 
-	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, utils.MustNewDebugLogger())
+	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
 
 	var (
 		walk      = j.walk
@@ -234,7 +234,7 @@ func TestWatchFail(t *testing.T) {
 	os.Remove("test_txtfile")
 
 	failAfter = 4
-	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, utils.MustNewDebugLogger())
+	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
 
 	var (
 		walkCount = 0
@@ -322,7 +322,7 @@ func TestWatchFailImmediately(t *testing.T) {
 	os.Remove("test_txtfile")
 
 	runHooks := func() error { return fmt.Errorf("nothing") } // Just so that coverage is triggered.
-	j := NewWatchJob(testIfile, ModeSyncthing, runHooks, runHooks, utils.MustNewDebugLogger())
+	j := NewWatchJob(testIfile, ModeSyncthing, runHooks, runHooks, zap.NewNop())
 
 	var (
 		walkCount = 0

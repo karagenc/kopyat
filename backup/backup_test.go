@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/tomruk/kopyaship/backup/provider"
 	"github.com/tomruk/kopyaship/config"
-	"github.com/tomruk/kopyaship/utils"
+	"go.uber.org/zap"
 )
 
 func TestGitignoreToRestic(t *testing.T) {
@@ -79,7 +79,7 @@ func TestGitignoreToRestic(t *testing.T) {
 		"/documents/4/6",
 	}
 
-	restic := provider.NewRestic(context.Background(), repoPath, extraArgs, password, false, utils.MustNewDebugLogger())
+	restic := provider.NewRestic(context.Background(), repoPath, extraArgs, password, false, zap.NewNop())
 	err = restic.Init()
 	require.NoError(t, err)
 
@@ -101,7 +101,7 @@ func TestGitignoreToRestic(t *testing.T) {
 		},
 	}
 
-	backups, err := FromConfig(context.Background(), configBackups, ".", utils.MustNewDebugLogger(), false)
+	backups, err := FromConfig(context.Background(), configBackups, ".", zap.NewNop(), false)
 	require.NoError(t, err)
 	backup := backups["test-gitignore-edge-cases"]
 
