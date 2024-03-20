@@ -21,6 +21,7 @@ type (
 
 	Backup struct {
 		isDaemon bool
+		log      utils.Logger
 
 		Name     string
 		Provider provider.Provider
@@ -55,6 +56,7 @@ func FromConfig(ctx context.Context, config *config.Config, cacheDir string, log
 func fromConfig(ctx context.Context, backupConfig *config.Backup, cacheDir string, log utils.Logger, isDaemon bool) (backup *Backup, skip bool, err error) {
 	backup = &Backup{
 		isDaemon:      isDaemon,
+		log:           log,
 		Name:          backupConfig.Name,
 		Provider:      provider.NewRestic(ctx, backupConfig.Restic.Repo, backupConfig.Restic.ExtraArgs, backupConfig.Restic.Password, backupConfig.Restic.Sudo, log),
 		GenerateIfile: backupConfig.IfileGeneration,
@@ -62,7 +64,7 @@ func fromConfig(ctx context.Context, backupConfig *config.Backup, cacheDir strin
 	}
 
 	if backup.skipOS() {
-		fmt.Printf("Skipping backup %s, due to unmatched OS: %s\n", backup.Name, backup.IfOSIs)
+		log.Infof("Skipping backup %s, due to unmatched OS: %s\n", backup.Name, backup.IfOSIs)
 		skip = true
 		return
 	}
@@ -102,11 +104,11 @@ func (b *Backup) skipOS() bool {
 	return false
 }
 
-func (backup *Backup) Do() error {
-	if !backup.GenerateIfile {
-		_, isRestic := backup.Provider.(*provider.Restic)
-		if !backup.isDaemon && isRestic && !backup.Provider.PasswordIsSet() {
-			fmt.Printf("Enter password for the repository: %s: ", backup.Provider.TargetLocation())
+func (b *Backup) Do() error {
+	if !b.GenerateIfile {
+		_, isRestic := b.Provider.(*provider.Restic)
+		if !b.isDaemon && isRestic && !b.Provider.PasswordIsSet() {
+			fmt.Printf("Enter password for the repository: %s: ", b.Provider.TargetLocation())
 			password, err := term.ReadPassword(syscall.Stdin)
 			fmt.Println()
 			if err != nil {
@@ -116,35 +118,35 @@ func (backup *Backup) Do() error {
 			defer os.Unsetenv("RESTIC_PASSWORD")
 		}
 
-		paths := backup.Paths.Paths()
+		paths := b.Paths.Paths()
 		for _, path := range paths {
-			fmt.Printf("Backing up: %s\n", path)
-			err := backup.Provider.Backup(path)
+			b.log.Infof("Backing up: %s\n", path)
+			err := b.Provider.Backup(path)
 			if err != nil {
 				return err
 			}
 		}
 	} else {
-		err := backup.Paths.generateIfile()
-		//defer os.Remove(backup.Paths.ifilePath())
+		err := b.Paths.generateIfile()
+		defer os.Remove(b.Paths.ifilePath())
 		if err != nil {
 			return err
 		}
 
-		err = backup.Provider.BackupWithIfile(backup.Paths.ifilePath())
+		err = b.Provider.BackupWithIfile(b.Paths.ifilePath())
 		if err != nil {
 			return err
 		}
 	}
 
-	if backup.WarnSize != 0 {
-		size, err := utils.DirSize(backup.Provider.TargetLocation())
+	if b.WarnSize != 0 {
+		size, err := utils.DirSize(b.Provider.TargetLocation())
 		if err != nil {
 			return err
 		}
-		if size > backup.WarnSize {
-			humanSize := units.BytesSize(float64(backup.WarnSize))
-			fmt.Printf("\nWARNING: Size of the backup %s has become larger than %s\n\n", backup.Name, humanSize)
+		if size > b.WarnSize {
+			humanSize := units.BytesSize(float64(b.WarnSize))
+			b.log.Warnf("\nSize of the backup %s has become larger than %s\n\n", b.Name, humanSize)
 		}
 	}
 	return nil
