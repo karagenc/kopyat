@@ -11,6 +11,11 @@ RUN make
 
 FROM alpine AS deploy
 
+RUN apk --no-cache add \
+	restic \
+	ca-certificates tzdata \
+	&& update-ca-certificates
+
 COPY --from=build /src/kopyaship /usr/local/bin
 COPY --from=build /src/kopyashipd /usr/local/bin
 
