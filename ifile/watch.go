@@ -133,7 +133,7 @@ func (j *WatchJob) Run() error {
 		return err
 	}
 
-	firstAttempt := time.Now()
+	last := time.Now()
 
 outer:
 	for {
@@ -141,7 +141,8 @@ outer:
 		if err != nil {
 			j.logError(err)
 			j.sleepBeforeRetry(1)
-			if time.Since(firstAttempt).Seconds() >= failAfter {
+			// Time since first attempt or last successful walk
+			if time.Since(last).Seconds() >= failAfter {
 				j.fail()
 				return err
 			}
@@ -158,12 +159,14 @@ outer:
 				if err != nil {
 					j.logError(err)
 					j.sleepBeforeRetry(1)
-					if time.Since(firstAttempt).Seconds() >= failAfter {
+					// Time since first attempt or last successful walk
+					if time.Since(last).Seconds() >= failAfter {
 						j.fail()
 						return err
 					}
 					continue outer
 				}
+				last = time.Now()
 			case <-j.stopped:
 				watcher.Close()
 				return nil
