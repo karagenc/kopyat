@@ -151,6 +151,84 @@ func TestWatchIgnore(t *testing.T) {
 	require.NoError(t, err)
 }
 
+// Make sure newly created .gitignore and ignored file inside newly created directory gets watched and entry gets added.
+func TestWatchIgnoreNewlyCreatedDir(t *testing.T) {
+	os.Remove(testIfile)
+	os.RemoveAll("testdir")
+	os.Remove(".gitignore")
+
+	defer os.RemoveAll("testdir")
+	defer os.Remove(".gitignore")
+
+	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, utils.MustNewDebugLogger())
+
+	var (
+		walk      = j.walk
+		content   []byte
+		walkCount = 0
+		mu        sync.Mutex
+	)
+
+	j.walk = func() error {
+		walkErr := walk()
+		c, err := os.ReadFile(testIfile)
+
+		mu.Lock()
+		content = c
+		walkCount++
+		mu.Unlock()
+
+		if !os.IsNotExist(err) {
+			require.NoError(t, err)
+		}
+		return walkErr
+	}
+	go func() {
+		err := j.Run()
+		require.NoError(t, err)
+	}()
+
+	for {
+		if j.Status() == WatchJobStatusRunning {
+			break
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+
+	err := os.Mkdir("testdir", 0755)
+	require.NoError(t, err)
+
+	err = os.WriteFile(".gitignore", []byte("/testdir/test_txtfile"), 0644)
+	require.NoError(t, err)
+
+	err = os.WriteFile("testdir/test_txtfile", []byte(""), 0644)
+	require.NoError(t, err)
+
+	for {
+		mu.Lock()
+		if walkCount >= 2 {
+			mu.Unlock()
+			break
+		}
+		mu.Unlock()
+		time.Sleep(50 * time.Millisecond)
+	}
+
+	found := false
+	mu.Lock()
+	for _, line := range strings.Split(string(content), "\n") {
+		entry := "/ifile/testdir/test_txtfile"
+		if line == entry {
+			found = true
+		}
+	}
+	mu.Unlock()
+	require.True(t, found)
+
+	err = j.Shutdown()
+	require.NoError(t, err)
+}
+
 func TestWatchFail(t *testing.T) {
 	os.Remove(testIfile)
 	os.Remove("test_txtfile")
