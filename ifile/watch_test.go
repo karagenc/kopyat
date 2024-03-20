@@ -206,7 +206,7 @@ func TestWatchIgnoreNewlyCreatedDir(t *testing.T) {
 
 	for {
 		mu.Lock()
-		if walkCount >= 2 {
+		if walkCount >= 4 {
 			mu.Unlock()
 			break
 		}
