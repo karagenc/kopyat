@@ -45,7 +45,7 @@ const (
 	WatchJobStatusStopped
 )
 
-const failAfter = 20 // 20 seconds
+var failAfter float64 = 20 // 20 seconds
 
 func (s WatchJobStatus) String() string {
 	switch s {

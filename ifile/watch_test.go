@@ -1,6 +1,7 @@
 package ifile
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -14,8 +15,6 @@ import (
 func TestWatch(t *testing.T) {
 	os.Remove(testIfile)
 	os.Remove("test_txtfile")
-
-	defer os.Remove(testIfile)
 
 	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, utils.MustNewDebugLogger())
 
@@ -147,6 +146,94 @@ func TestWatchIgnore(t *testing.T) {
 	}
 	mu.Unlock()
 	require.True(t, found)
+
+	err = j.Shutdown()
+	require.NoError(t, err)
+}
+
+func TestWatchFail(t *testing.T) {
+	os.Remove(testIfile)
+	os.Remove("test_txtfile")
+
+	failAfter = 4
+	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, utils.MustNewDebugLogger())
+
+	var (
+		walkCount = 0
+		mu        sync.Mutex
+	)
+
+	j.walk = func() error {
+		mu.Lock()
+		walkCount++
+		walkCount := walkCount - 1
+		mu.Unlock()
+
+		if walkCount == 0 {
+			return nil
+		}
+		return fmt.Errorf("test walk error")
+	}
+
+	go func() {
+		err := j.Run()
+		require.Error(t, err)
+	}()
+
+	for {
+		if j.Status() == WatchJobStatusRunning {
+			break
+		}
+		time.Sleep(time.Millisecond * 50)
+	}
+
+	for {
+		mu.Lock()
+		if walkCount >= 1 {
+			mu.Unlock()
+			break
+		}
+		mu.Unlock()
+		time.Sleep(time.Millisecond * 50)
+	}
+
+	// Trigger walk
+	err := os.WriteFile("test_txtfile", nil, 0644)
+	require.NoError(t, err)
+	err = os.Remove("test_txtfile")
+	require.NoError(t, err)
+
+	for {
+		mu.Lock()
+		if walkCount >= 2 {
+			mu.Unlock()
+			break
+		}
+		mu.Unlock()
+		time.Sleep(time.Millisecond * 50)
+	}
+
+	info := j.Info()
+	require.Greater(t, len(info.Errors), 0)
+
+	// Ensure 4 seconds (value of failAfter) has passed.
+	time.Sleep(4010 * time.Millisecond)
+
+	// Trigger walk again
+	err = os.WriteFile("test_txtfile2", nil, 0644)
+	require.NoError(t, err)
+	err = os.Remove("test_txtfile2")
+	require.NoError(t, err)
+
+	for {
+		if j.Status() == WatchJobStatusFailed {
+			break
+		}
+		time.Sleep(time.Millisecond * 50)
+	}
+
+	info = j.Info()
+	require.Greater(t, len(info.Errors), 0)
 
 	err = j.Shutdown()
 	require.NoError(t, err)
