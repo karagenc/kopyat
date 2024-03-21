@@ -310,8 +310,20 @@ func TestWatchFail(t *testing.T) {
 		time.Sleep(time.Millisecond * 50)
 	}
 
-	info := j.Info()
-	require.Greater(t, len(info.Errors), 0)
+	retries := 0
+	for {
+		info := j.Info()
+		if len(info.Errors) > 0 {
+			break
+		}
+		if retries >= 100 {
+			t.Fatal("expected (waited for) len(info.Errors) to be greater than 0, but waiting timed out")
+		}
+		time.Sleep(time.Millisecond * 50)
+		fmt.Println("Waiting for len(info.Errors) to be greater than 0")
+		retries++
+		continue
+	}
 
 	// Ensure 4 seconds (value of failAfter) has passed.
 	time.Sleep(4010 * time.Millisecond)
@@ -330,8 +342,20 @@ func TestWatchFail(t *testing.T) {
 		time.Sleep(time.Millisecond * 50)
 	}
 
-	info = j.Info()
-	require.Greater(t, len(info.Errors), 0)
+	retries = 0
+	for {
+		info := j.Info()
+		if len(info.Errors) > 1 {
+			break
+		}
+		if retries >= 100 {
+			t.Fatal("expected (waited for) len(info.Errors) to be greater than 1, but waiting timed out")
+		}
+		time.Sleep(time.Millisecond * 50)
+		fmt.Println("Waiting for len(info.Errors) to be greater than 1")
+		retries++
+		continue
+	}
 
 	err = j.Shutdown()
 	require.NoError(t, err)
