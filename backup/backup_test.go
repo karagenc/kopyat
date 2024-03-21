@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/tomruk/kopyaship/backup/provider"
 	"github.com/tomruk/kopyaship/config"
+	"github.com/tomruk/kopyaship/utils"
 	"go.uber.org/zap"
 )
 
@@ -28,9 +29,11 @@ func TestGitignoreToRestic(t *testing.T) {
 
 	basePath, err := filepath.Abs(basePathRelative)
 	require.NoError(t, err)
+	basePath = filepath.ToSlash(basePath)
 
 	repoPath, err := filepath.Abs(repoPathRelative)
 	require.NoError(t, err)
+	repoPath = filepath.ToSlash(repoPath)
 
 	os.RemoveAll("../tmp/documents")
 	os.RemoveAll(repoPath)
@@ -128,15 +131,26 @@ func TestGitignoreToRestic(t *testing.T) {
 	require.Greater(t, len(lines), 0)
 
 	filesDirs := make(map[string]struct{})
+
+	matchLineWith := basePath
+	if utils.RunningOnWindows && utils.StartsWithDriveLetter(basePath) {
+		drive := matchLineWith[0]
+		matchLineWith = matchLineWith[2:]
+		if !strings.HasPrefix(matchLineWith, "/") {
+			matchLineWith = "/" + matchLineWith
+		}
+		matchLineWith = "/" + string(drive) + matchLineWith
+	}
+
 	for i, line := range lines {
 		if line == "" {
 			t.Fatal("line is empty")
 		}
 		line = filepath.ToSlash(line)
-		if len(line) <= len(basePath) {
+		if len(line) <= len(matchLineWith) {
 			continue
 		}
-		line = strings.TrimPrefix(line, basePath)
+		line = strings.TrimPrefix(line, matchLineWith)
 
 		fmt.Printf("line %d: '%s'\n", i, line)
 		filesDirs[line] = struct{}{}
