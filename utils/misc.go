@@ -11,6 +11,16 @@ import (
 
 const RunningOnWindows = runtime.GOOS == "windows"
 
+func StripDriveLetter(path *string) {
+	if RunningOnWindows && StartsWithDriveLetter(*path) {
+		*path = (*path)[2:]
+	}
+}
+
+func StartsWithDriveLetter(path string) bool {
+	return len(path) >= 2 && (path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z') && path[1] == ':'
+}
+
 func DirSize(path string) (int64, error) {
 	var size int64
 	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
