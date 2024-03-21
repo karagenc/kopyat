@@ -41,7 +41,6 @@ func TestIfileOverwrite(t *testing.T) {
 	content, err := os.ReadFile(testIfile)
 	require.NoError(t, err)
 
-	fmt.Printf("content: %s\n", string(content))
 	require.True(t, ifileFormRe.Match(content))
 
 	i, err = New(testIfile, ModeSyncthing, false, zap.NewNop())
