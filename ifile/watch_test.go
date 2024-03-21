@@ -233,8 +233,8 @@ func TestWatchFail(t *testing.T) {
 	os.Remove(testIfile)
 	os.Remove("test_txtfile")
 
-	failAfter = 4
 	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
+	j.failAfter = 4
 
 	var (
 		walkCount = 0

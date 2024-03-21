@@ -16,11 +16,12 @@ import (
 
 type (
 	WatchJob struct {
-		log     *zap.Logger
-		logS    *zap.SugaredLogger
-		status  atomic.Int32
-		stopped chan struct{}
-		errs    chan error
+		failAfter int
+		log       *zap.Logger
+		logS      *zap.SugaredLogger
+		status    atomic.Int32
+		stopped   chan struct{}
+		errs      chan error
 
 		scanPath string
 		ifile    string
@@ -45,7 +46,7 @@ const (
 	WatchJobStatusStopped
 )
 
-var failAfter float64 = 20 // 20 seconds
+const defaultFailAfter = 20 // 20 seconds
 
 func (s WatchJobStatus) String() string {
 	switch s {
@@ -71,14 +72,15 @@ func NewWatchJob(ifile string, mode Mode, runPreHooks, runPostHooks func() error
 	}
 
 	j := &WatchJob{
-		log:      log,
-		logS:     log.Sugar(),
-		status:   atomic.Int32{},
-		stopped:  make(chan struct{}),
-		errs:     make(chan error, 5),
-		scanPath: filepath.Dir(ifile),
-		ifile:    ifile,
-		mode:     mode,
+		failAfter: defaultFailAfter,
+		log:       log,
+		logS:      log.Sugar(),
+		status:    atomic.Int32{},
+		stopped:   make(chan struct{}),
+		errs:      make(chan error, 5),
+		scanPath:  filepath.Dir(ifile),
+		ifile:     ifile,
+		mode:      mode,
 	}
 	j.status.Store(int32(WatchJobStatusWillRun))
 
@@ -144,7 +146,7 @@ outer:
 			j.logError(err)
 			j.sleepBeforeRetry(1)
 			// Time since first attempt or last successful walk
-			if time.Since(last).Seconds() >= failAfter {
+			if time.Since(last).Seconds() >= float64(j.failAfter) {
 				j.fail()
 				return err
 			}
@@ -162,7 +164,7 @@ outer:
 					j.logError(err)
 					j.sleepBeforeRetry(1)
 					// Time since first attempt or last successful walk
-					if time.Since(last).Seconds() >= failAfter {
+					if time.Since(last).Seconds() >= float64(j.failAfter) {
 						j.fail()
 						return err
 					}
@@ -175,7 +177,7 @@ outer:
 					j.logError(err)
 					j.sleepBeforeRetry(1)
 					// Time since first attempt or last successful walk
-					if time.Since(last).Seconds() >= failAfter {
+					if time.Since(last).Seconds() >= float64(j.failAfter) {
 						j.fail()
 						return err
 					}
