@@ -161,6 +161,7 @@ func testRunRestic(repoPath, command, extraArgs string, password string, wr io.W
 	parser.ParseBacktick = true
 	parser.ParseEnv = true
 
+	repoPath = filepath.ToSlash(repoPath)
 	command = fmt.Sprintf("restic -r '%s' %s", repoPath, command)
 	if extraArgs != "" {
 		command += " " + extraArgs
