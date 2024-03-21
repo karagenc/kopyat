@@ -11,16 +11,17 @@ import (
 	"go.uber.org/zap"
 )
 
-var testIfile = func() string {
-	f, err := filepath.Abs("../test_ifile")
+var testIfile = func(suffix string) string {
+	f, err := filepath.Abs("../test_ifile_" + suffix)
 	if err != nil {
 		panic(err)
 	}
 	return f
-}()
+}
 
 // Test whether it truncates the old ifile contents when appendToExisting is false.
 func TestIfileOverwrite(t *testing.T) {
+	testIfile := testIfile("ifile_overwrite")
 	ifileFormRe := regexp.MustCompile(fmt.Sprintf("^.*%s\n%s\n([/a-zA-Z0-9-_. !#]+\n)+%s\n$",
 		regexp.QuoteMeta(generatedBy),
 		regexp.QuoteMeta(beginIndicator),
@@ -55,6 +56,7 @@ func TestIfileOverwrite(t *testing.T) {
 
 // Test whether it successfully adds entries between beginIndiator and endIndicator, preserving old contents when appendToExisting is true.
 func TestIfileAppend(t *testing.T) {
+	testIfile := testIfile("ifile_append")
 	content := []byte(`# This is a comment.
 
 /this/is/a/test/entry
@@ -99,6 +101,7 @@ func TestIfileAppend(t *testing.T) {
 
 // Test whether it successfully adds entries between beginIndiator and endIndicator, preserving old contents when appendToExisting is true.
 func TestIfileAppend2(t *testing.T) {
+	testIfile := testIfile("ifile_append2")
 	contentStart := `# This is a comment.
 
 /this/is/a/test/entry

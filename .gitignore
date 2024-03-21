@@ -8,6 +8,6 @@ __debug_bin*
 /kopyashipd.lock
 /kopyaship.yml
 /tmp
-test_ifile
+test_ifile*
 *.out
 /script-playground

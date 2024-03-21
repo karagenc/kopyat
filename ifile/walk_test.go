@@ -12,6 +12,7 @@ import (
 )
 
 func TestSyncthingWalkInCurrentProject(t *testing.T) {
+	testIfile := testIfile("syncthing_walk_in_current_project")
 	os.Remove(testIfile)
 	i, err := New(testIfile, ModeSyncthing, true, zap.NewNop())
 	if err != nil {
@@ -41,6 +42,7 @@ func TestSyncthingWalkInCurrentProject(t *testing.T) {
 
 // Ensure the root path doesn't appear in ifile.
 func TestSyncthingWalkNoRootMatchesInCurrentProject(t *testing.T) {
+	testIfile := testIfile("syncthing_walk_no_root_matches_in_current_project")
 	os.Remove(testIfile)
 	i, err := New(testIfile, ModeSyncthing, true, zap.NewNop())
 	if err != nil {
@@ -68,6 +70,7 @@ func TestSyncthingWalkNoRootMatchesInCurrentProject(t *testing.T) {
 }
 
 func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
+	testIfile := testIfile("syncthing_walk_in_current_project_append")
 	os.Remove(testIfile)
 	i, err := New(testIfile, ModeSyncthing, true, zap.NewNop())
 	if err != nil {
@@ -119,6 +122,7 @@ func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
 }
 
 func TestResticWalkInCurrentProject(t *testing.T) {
+	testIfile := testIfile("restic_walk_in_current_project")
 	os.Remove(testIfile)
 	i, err := New(testIfile, ModeRestic, false, zap.NewNop())
 	if err != nil {

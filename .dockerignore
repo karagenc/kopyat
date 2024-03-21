@@ -8,5 +8,5 @@
 /kopyashipd.lock
 /kopyaship.yml
 /tmp
-**/test_ifile
-**/test_txtfile
+**/test_ifile*
+**/test_txtfile*

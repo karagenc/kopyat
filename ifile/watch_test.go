@@ -3,6 +3,7 @@ package ifile
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -13,8 +14,10 @@ import (
 )
 
 func TestWatch(t *testing.T) {
+	const testTxtfile = "test_txtfile_watch"
+	testIfile := testIfile("watch")
 	os.Remove(testIfile)
-	os.Remove("test_txtfile")
+	os.Remove(testTxtfile)
 
 	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
 
@@ -66,7 +69,7 @@ func TestWatch(t *testing.T) {
 	}
 
 	for _, line := range strings.Split(string(content), "\n") {
-		entry := "/ifile/test_txtfile"
+		entry := "/ifile/" + testTxtfile
 		if line == entry {
 			t.Fatalf("this shouldn't have been in ifile: %s", entry)
 		}
@@ -78,11 +81,13 @@ func TestWatch(t *testing.T) {
 
 // Make sure newly created .gitignore and ignored file gets watched and entry gets added.
 func TestWatchIgnore(t *testing.T) {
+	const testTxtfile = "test_txtfile_watch_ignore"
+	testIfile := testIfile("watch_ignore")
 	os.Remove(testIfile)
-	os.Remove("test_txtfile")
+	os.Remove(testTxtfile)
 	os.Remove(".gitignore")
 
-	defer os.Remove("test_txtfile")
+	defer os.Remove(testTxtfile)
 	defer os.Remove(".gitignore")
 
 	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
@@ -120,10 +125,10 @@ func TestWatchIgnore(t *testing.T) {
 		time.Sleep(50 * time.Millisecond)
 	}
 
-	err := os.WriteFile(".gitignore", []byte("test_txtfile"), 0644)
+	err := os.WriteFile(".gitignore", []byte(testTxtfile), 0644)
 	require.NoError(t, err)
 
-	err = os.WriteFile("test_txtfile", []byte(""), 0644)
+	err = os.WriteFile(testTxtfile, []byte(""), 0644)
 	require.NoError(t, err)
 
 	for {
@@ -139,7 +144,7 @@ func TestWatchIgnore(t *testing.T) {
 	found := false
 	mu.Lock()
 	for _, line := range strings.Split(string(content), "\n") {
-		entry := "/ifile/test_txtfile"
+		entry := "/ifile/" + testTxtfile
 		if line == entry {
 			found = true
 		}
@@ -153,11 +158,16 @@ func TestWatchIgnore(t *testing.T) {
 
 // Make sure newly created .gitignore and ignored file inside newly created directory gets watched and entry gets added.
 func TestWatchIgnoreNewlyCreatedDir(t *testing.T) {
+	const (
+		testDir     = "testdir_watch_ignore_newly_created_dir"
+		testTxtfile = "test_txtfile_watch_ignore_newly_created_dir"
+	)
+	testIfile := testIfile("watch_ignore_newly_created_dir")
 	os.Remove(testIfile)
-	os.RemoveAll("testdir")
+	os.RemoveAll(testDir)
 	os.Remove(".gitignore")
 
-	defer os.RemoveAll("testdir")
+	defer os.RemoveAll(testDir)
 	defer os.Remove(".gitignore")
 
 	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
@@ -195,13 +205,13 @@ func TestWatchIgnoreNewlyCreatedDir(t *testing.T) {
 		time.Sleep(50 * time.Millisecond)
 	}
 
-	err := os.Mkdir("testdir", 0755)
+	err := os.Mkdir(testDir, 0755)
 	require.NoError(t, err)
 
-	err = os.WriteFile(".gitignore", []byte("/testdir/test_txtfile"), 0644)
+	err = os.WriteFile(".gitignore", []byte("/"+testDir+"/"+testTxtfile), 0644)
 	require.NoError(t, err)
 
-	err = os.WriteFile("testdir/test_txtfile", []byte(""), 0644)
+	err = os.WriteFile(filepath.Join(testDir, testTxtfile), []byte(""), 0644)
 	require.NoError(t, err)
 
 	for {
@@ -217,7 +227,7 @@ func TestWatchIgnoreNewlyCreatedDir(t *testing.T) {
 	found := false
 	mu.Lock()
 	for _, line := range strings.Split(string(content), "\n") {
-		entry := "/ifile/testdir/test_txtfile"
+		entry := "/ifile/" + testDir + "/" + testTxtfile
 		if line == entry {
 			found = true
 		}
@@ -230,8 +240,14 @@ func TestWatchIgnoreNewlyCreatedDir(t *testing.T) {
 }
 
 func TestWatchFail(t *testing.T) {
+	const (
+		testTxtfile1 = "test_txtfile_watchfail_1"
+		testTxtfile2 = "test_txtfile_watchfail_2"
+	)
+	testIfile := testIfile("watch_fail")
 	os.Remove(testIfile)
-	os.Remove("test_txtfile")
+	os.Remove(testTxtfile1)
+	os.Remove(testTxtfile2)
 
 	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
 	j.failAfter = 4
@@ -278,9 +294,9 @@ func TestWatchFail(t *testing.T) {
 	}
 
 	// Trigger walk
-	err := os.WriteFile("test_txtfile", nil, 0644)
+	err := os.WriteFile(testTxtfile1, nil, 0644)
 	require.NoError(t, err)
-	err = os.Remove("test_txtfile")
+	err = os.Remove(testTxtfile1)
 	require.NoError(t, err)
 
 	for {
@@ -301,9 +317,9 @@ func TestWatchFail(t *testing.T) {
 	time.Sleep(4010 * time.Millisecond)
 
 	// Trigger walk again
-	err = os.WriteFile("test_txtfile2", nil, 0644)
+	err = os.WriteFile(testTxtfile2, nil, 0644)
 	require.NoError(t, err)
-	err = os.Remove("test_txtfile2")
+	err = os.Remove(testTxtfile2)
 	require.NoError(t, err)
 
 	for {
@@ -322,8 +338,8 @@ func TestWatchFail(t *testing.T) {
 }
 
 func TestWatchFailImmediately(t *testing.T) {
+	testIfile := testIfile("watch_fail_immediately")
 	os.Remove(testIfile)
-	os.Remove("test_txtfile")
 
 	runHooks := func() error { return fmt.Errorf("nothing") } // Just so that coverage is triggered.
 	j := NewWatchJob(testIfile, ModeSyncthing, runHooks, runHooks, zap.NewNop())
