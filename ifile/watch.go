@@ -130,19 +130,23 @@ func (j *WatchJob) Info() *WatchJobInfo {
 	}
 }
 
-func (j *WatchJob) Run() error {
-	err := j.walk()
+func (j *WatchJob) Run() (err error) {
+	err = j.walk()
 	if err != nil {
 		j.logError(err)
 		j.fail()
-		return err
+		return
 	}
 
-	last := time.Now()
+	var (
+		last      = time.Now()
+		watcher   *fsnotify.Watcher
+		eventChan <-chan string
+	)
 
 outer:
 	for {
-		watcher, eventChan, err := watch(j.scanPath)
+		watcher, eventChan, err = watch(j.scanPath)
 		if err != nil {
 			j.logError(err)
 			j.sleepBeforeRetry(1)
@@ -151,6 +155,7 @@ outer:
 				j.fail()
 				return err
 			}
+			j.status.Store(int32(WatchJobStatusWillRun))
 			continue
 		}
 
@@ -169,6 +174,7 @@ outer:
 						j.fail()
 						return err
 					}
+					j.status.Store(int32(WatchJobStatusWillRun))
 					watcher.Close()
 					continue outer
 				}
@@ -182,11 +188,13 @@ outer:
 						j.fail()
 						return err
 					}
+					j.status.Store(int32(WatchJobStatusWillRun))
 					watcher.Close()
 					continue outer
 				}
 			case <-j.stopped:
 				watcher.Close()
+				j.status.Store(int32(WatchJobStatusStopped))
 				return nil
 			}
 		}
@@ -212,7 +220,6 @@ func (j *WatchJob) fail() { j.status.Store(int32(WatchJobStatusFailed)) }
 
 func (j *WatchJob) Shutdown() error {
 	close(j.stopped)
-	j.status.Store(int32(WatchJobStatusStopped))
 	return nil
 }
 
