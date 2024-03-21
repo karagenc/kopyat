@@ -205,8 +205,13 @@ func (j *WatchJob) logError(err error) {
 	if err != nil {
 		err = fmt.Errorf("watch: %v", err)
 		j.log.Error(err.Error())
+
 		j.errsMu.Lock()
-		j.errs = append(j.errs, err)
+		if len(j.errs) == 20 {
+			j.errs[19] = fmt.Errorf("more than 20 errors were encountered. the first 19 of them were stored and shown, while the others were discarded.")
+		} else {
+			j.errs = append(j.errs, err)
+		}
 		j.errsMu.Unlock()
 	}
 }
