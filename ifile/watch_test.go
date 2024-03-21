@@ -275,14 +275,6 @@ func TestWatchFail(t *testing.T) {
 	}()
 
 	for {
-		if j.Status() == WatchJobStatusRunning {
-			break
-		}
-		fmt.Println("Waiting for j.Status() == WatchJobStatusRunning")
-		time.Sleep(time.Millisecond * 50)
-	}
-
-	for {
 		mu.Lock()
 		if walkCount >= 1 {
 			mu.Unlock()
@@ -290,6 +282,14 @@ func TestWatchFail(t *testing.T) {
 		}
 		mu.Unlock()
 		fmt.Println("Waiting for walkCount >= 1")
+		time.Sleep(time.Millisecond * 50)
+	}
+
+	for {
+		if j.Status() == WatchJobStatusRunning {
+			break
+		}
+		fmt.Println("Waiting for j.Status() == WatchJobStatusRunning")
 		time.Sleep(time.Millisecond * 50)
 	}
 
