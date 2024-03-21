@@ -6,7 +6,6 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"syscall"
 
 	"go.uber.org/zap"
 	"golang.org/x/term"
@@ -139,7 +138,7 @@ func (b *Backup) Do() error {
 			_, isRestic := b.Provider.(*provider.Restic)
 			if !b.isDaemon && isRestic && !b.Provider.PasswordIsSet() {
 				fmt.Printf("Enter password for the repository %s: ", b.Provider.TargetLocation())
-				password, err := term.ReadPassword(syscall.Stdin)
+				password, err := term.ReadPassword(int(os.Stdin.Fd()))
 				fmt.Println()
 				if err != nil {
 					return err
