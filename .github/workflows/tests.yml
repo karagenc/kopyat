@@ -13,5 +13,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '^1.22'
+      - name: Setup restic (Unix)
+        if: runner.os != 'Windows'
+        run: mkdir -p tmp && cd tmp && git clone https://github.com/restic/restic restic-source && cd restic-source && git checkout "$(git describe --tags "$(git rev-list --tags --max-count=1)")" && go run build.go && mv restic .. && cd .. && rm -rf restic-source && echo "$(pwd)" >> "$GITHUB_PATH"
+      - name: Setup restic (Windows)
+        if: runner.os == 'Windows'
+        run: mkdir tmp -ea 0 ; cd tmp ; git clone https://github.com/restic/restic restic-source ; cd restic-source ; git checkout "$(git describe --tags "$(git rev-list --tags --max-count=1)")" ; go run build.go ; mv restic.exe .. ; cd .. ; rm -Recurse -Force -Path restic-source ; echo "$((Get-Item .).FullName)" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Run tests
         run: make test
