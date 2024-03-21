@@ -50,6 +50,9 @@ func TestGitignoreToRestic(t *testing.T) {
 	mustCreateFile("../tmp/documents/6", "")
 	mustCreateFile("../tmp/documents/4/6", "")
 
+	os.WriteFile("../tmp/documents/#7", nil, 0644) // OS might not support this file name. Create optionally — don't check for error.
+	os.WriteFile("../tmp/documents/!8", nil, 0644) // OS might not support this file name. Create optionally — don't check for error.
+
 	// https://git-scm.com/docs/gitignore#_pattern_format
 	mustCreateFile("../tmp/documents/.gitignore", `
 #1
@@ -59,8 +62,11 @@ func TestGitignoreToRestic(t *testing.T) {
 /5
 /4/6
 
+\#7
+\!8
 `)
 
+	// Non-ignored files (files that were successfully backed up to the restic repository)
 	mustHave := []string{
 		"/documents",
 		"/documents/.gitignore",
@@ -71,12 +77,16 @@ func TestGitignoreToRestic(t *testing.T) {
 		"/documents/4/5",
 		"/documents/6",
 	}
+
+	// Ignored files
 	mustNotHave := []string{
 		"",
 		"/documents/3",
 		"/documents/4/3",
 		"/documents/5",
 		"/documents/4/6",
+		"/documents/#7",
+		"/documents/!8",
 	}
 
 	restic := provider.NewRestic(context.Background(), repoPath, extraArgs, password, false, zap.NewNop())

@@ -21,7 +21,7 @@ var testIfile = func() string {
 
 // Test whether it truncates the old ifile contents when appendToExisting is false.
 func TestIfileOverwrite(t *testing.T) {
-	ifileFormRe := regexp.MustCompile(fmt.Sprintf("^.*%s\n%s\n([/a-zA-Z0-9-_.]+\n)+%s\n$",
+	ifileFormRe := regexp.MustCompile(fmt.Sprintf("^.*%s\n%s\n([/a-zA-Z0-9-_. !#]+\n)+%s\n$",
 		regexp.QuoteMeta(generatedBy),
 		regexp.QuoteMeta(beginIndicator),
 		regexp.QuoteMeta(endIndicator),
@@ -41,6 +41,7 @@ func TestIfileOverwrite(t *testing.T) {
 	content, err := os.ReadFile(testIfile)
 	require.NoError(t, err)
 
+	fmt.Printf("content: %s\n", string(content))
 	require.True(t, ifileFormRe.Match(content))
 
 	i, err = New(testIfile, ModeSyncthing, false, zap.NewNop())
@@ -61,7 +62,7 @@ func TestIfileAppend(t *testing.T) {
 
 `)
 
-	ifileFormRe := regexp.MustCompile(fmt.Sprintf("^%s%s\n%s\n([/a-zA-Z0-9-_.]+\n)+%s\n$",
+	ifileFormRe := regexp.MustCompile(fmt.Sprintf("^%s%s\n%s\n([/a-zA-Z0-9-_. !#]+\n)+%s\n$",
 		regexp.QuoteMeta(string(content)),
 		regexp.QuoteMeta(generatedBy),
 		regexp.QuoteMeta(beginIndicator),
@@ -114,7 +115,7 @@ func TestIfileAppend2(t *testing.T) {
 /this/is/a/test/entry/after/ifile/end2
 `
 
-	ifileFormRe := regexp.MustCompile(fmt.Sprintf("^%s%s\n%s\n([/a-zA-Z0-9-_.]+\n)+%s%s$",
+	ifileFormRe := regexp.MustCompile(fmt.Sprintf("^%s%s\n%s\n([/a-zA-Z0-9-_. !#]+\n)+%s%s$",
 		regexp.QuoteMeta(contentStart),
 		regexp.QuoteMeta(generatedBy),
 		regexp.QuoteMeta(beginIndicator),
