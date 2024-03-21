@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/tomruk/kopyaship/utils"
 	"go.uber.org/zap"
 )
 
@@ -294,10 +295,26 @@ func TestWatchFail(t *testing.T) {
 	}
 
 	// Trigger walk
-	err := os.WriteFile(testTxtfile1, nil, 0644)
-	require.NoError(t, err)
-	err = os.Remove(testTxtfile1)
-	require.NoError(t, err)
+	if utils.RunningOnGitHubActions && utils.RunningOnMacOS {
+		// Trigger walk manually.
+		// For some reason, fsnotify events are not emitted on macOS GitHub Action runner.
+		for {
+			if v := j.testEventChanSender.Load(); v != nil {
+				f := v.(func(string))
+				absTestTxtfile1, err := filepath.Abs(testTxtfile1)
+				require.NoError(t, err)
+				f(absTestTxtfile1)
+				break
+			}
+			fmt.Println("Waiting for j.testEventChanSender.Load() != nil")
+			time.Sleep(50 * time.Millisecond)
+		}
+	} else {
+		err := os.WriteFile(testTxtfile1, nil, 0644)
+		require.NoError(t, err)
+		err = os.Remove(testTxtfile1)
+		require.NoError(t, err)
+	}
 
 	for {
 		mu.Lock()
@@ -329,10 +346,26 @@ func TestWatchFail(t *testing.T) {
 	time.Sleep(4010 * time.Millisecond)
 
 	// Trigger walk again
-	err = os.WriteFile(testTxtfile2, nil, 0644)
-	require.NoError(t, err)
-	err = os.Remove(testTxtfile2)
-	require.NoError(t, err)
+	if utils.RunningOnGitHubActions && utils.RunningOnMacOS {
+		// Trigger walk manually.
+		// For some reason, fsnotify events are not emitted on macOS GitHub Action runner.
+		for {
+			if v := j.testEventChanSender.Load(); v != nil {
+				f := v.(func(string))
+				absTestTxtfile1, err := filepath.Abs(testTxtfile2)
+				require.NoError(t, err)
+				f(absTestTxtfile1)
+				break
+			}
+			fmt.Println("Waiting for j.testEventChanSender.Load() != nil")
+			time.Sleep(50 * time.Millisecond)
+		}
+	} else {
+		err := os.WriteFile(testTxtfile2, nil, 0644)
+		require.NoError(t, err)
+		err = os.Remove(testTxtfile2)
+		require.NoError(t, err)
+	}
 
 	for {
 		if j.Status() == WatchJobStatusFailed {
@@ -357,7 +390,7 @@ func TestWatchFail(t *testing.T) {
 		continue
 	}
 
-	err = j.Shutdown()
+	err := j.Shutdown()
 	require.NoError(t, err)
 }
 

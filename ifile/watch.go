@@ -31,6 +31,8 @@ type (
 		mode     Mode
 
 		walk func() error
+
+		testEventChanSender atomic.Value
 	}
 
 	WatchJobStatus int32
@@ -141,7 +143,7 @@ func (j *WatchJob) Run() (err error) {
 	var (
 		last      = time.Now()
 		watcher   *fsnotify.Watcher
-		eventChan <-chan string
+		eventChan chan string
 	)
 
 outer:
@@ -159,6 +161,12 @@ outer:
 			continue
 		}
 
+		j.testEventChanSender.Store(func(path string) {
+			select {
+			case eventChan <- path:
+			default:
+			}
+		})
 		j.status.Store(int32(WatchJobStatusRunning))
 
 		for {

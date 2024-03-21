@@ -9,7 +9,12 @@ import (
 	"time"
 )
 
-const RunningOnWindows = runtime.GOOS == "windows"
+const (
+	RunningOnWindows = runtime.GOOS == "windows"
+	RunningOnMacOS   = runtime.GOOS == "darwin"
+)
+
+var RunningOnGitHubActions = os.Getenv("GITHUB_ACTIONS") == "true"
 
 func StripDriveLetter(path string) string {
 	if StartsWithDriveLetter(path) {
