@@ -228,7 +228,7 @@ func (j *WatchJob) Shutdown() error {
 	return nil
 }
 
-func watch(path string) (watcher *fsnotify.Watcher, eventChan chan string, err error) {
+func watch(root string) (watcher *fsnotify.Watcher, eventChan chan string, err error) {
 	watcher, err = fsnotify.NewWatcher()
 	if err != nil {
 		return
@@ -257,7 +257,7 @@ func watch(path string) (watcher *fsnotify.Watcher, eventChan chan string, err e
 		}
 	}()
 
-	err = filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
+	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
 			err := watcher.Add(path)
 			if err != nil {

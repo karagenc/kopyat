@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -31,7 +30,6 @@ func TestStripDriveLetter(t *testing.T) {
 
 	for i, path := range paths {
 		newPath := StripDriveLetter(path)
-		fmt.Println(newPath)
 		require.Equal(t, expected[i], newPath)
 	}
 }
