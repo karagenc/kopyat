@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -21,7 +22,9 @@ type (
 		logS      *zap.SugaredLogger
 		status    atomic.Int32
 		stopped   chan struct{}
-		errs      chan error
+
+		errs   []error
+		errsMu sync.Mutex
 
 		scanPath string
 		ifile    string
@@ -77,7 +80,7 @@ func NewWatchJob(ifile string, mode Mode, runPreHooks, runPostHooks func() error
 		logS:      log.Sugar(),
 		status:    atomic.Int32{},
 		stopped:   make(chan struct{}),
-		errs:      make(chan error, 5),
+		errs:      make([]error, 0),
 		scanPath:  filepath.Dir(ifile),
 		ifile:     ifile,
 		mode:      mode,
@@ -113,14 +116,12 @@ func (j *WatchJob) Status() WatchJobStatus { return WatchJobStatus(j.status.Load
 var titleCaser = cases.Title(language.AmericanEnglish)
 
 func (j *WatchJob) Info() *WatchJobInfo {
-	errs := make([]string, 0, len(j.errs))
-	for len(j.errs) > 0 {
-		select {
-		case err := <-j.errs:
-			errs = append(errs, err.Error())
-		default:
-		}
+	j.errsMu.Lock()
+	errs := make([]string, len(j.errs))
+	for i := range j.errs {
+		errs[i] = j.errs[i].Error()
 	}
+	j.errsMu.Unlock()
 
 	return &WatchJobInfo{
 		Ifile:  j.ifile,
@@ -196,10 +197,9 @@ func (j *WatchJob) logError(err error) {
 	if err != nil {
 		err = fmt.Errorf("watch: %v", err)
 		j.log.Error(err.Error())
-		select {
-		case j.errs <- err:
-		default:
-		}
+		j.errsMu.Lock()
+		j.errs = append(j.errs, err)
+		j.errsMu.Unlock()
 	}
 }
 
