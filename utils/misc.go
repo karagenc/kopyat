@@ -11,10 +11,11 @@ import (
 
 const RunningOnWindows = runtime.GOOS == "windows"
 
-func StripDriveLetter(path *string) {
-	if RunningOnWindows && StartsWithDriveLetter(*path) {
-		*path = (*path)[2:]
+func StripDriveLetter(path string) string {
+	if StartsWithDriveLetter(path) {
+		return path[2:]
 	}
+	return path
 }
 
 func StartsWithDriveLetter(path string) bool {

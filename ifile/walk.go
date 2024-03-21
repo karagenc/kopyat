@@ -72,7 +72,9 @@ func (i *Ifile) Walk(root string) error {
 		if i.mode == ModeSyncthing && !anyMatches {
 			return nil
 		} else if i.mode == ModeSyncthing {
-			utils.StripDriveLetter(&path)
+			if utils.RunningOnWindows {
+				path = utils.StripDriveLetter(path)
+			}
 		}
 
 		entries = append(entries, &entry{
