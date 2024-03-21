@@ -14,13 +14,21 @@ import (
 	"go.uber.org/zap"
 )
 
+var scanPath = func() string {
+	f, err := filepath.Abs("..")
+	if err != nil {
+		panic(err)
+	}
+	return f
+}()
+
 func TestWatch(t *testing.T) {
 	const testTxtfile = "test_txtfile_watch"
 	testIfile := testIfile("watch")
 	os.Remove(testIfile)
 	os.Remove(testTxtfile)
 
-	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
+	j := NewWatchJob(testIfile, scanPath, ModeSyncthing, nil, nil, zap.NewNop())
 
 	var (
 		walk      = j.walk
@@ -91,7 +99,7 @@ func TestWatchIgnore(t *testing.T) {
 	defer os.Remove(testTxtfile)
 	defer os.Remove(".gitignore")
 
-	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
+	j := NewWatchJob(testIfile, scanPath, ModeSyncthing, nil, nil, zap.NewNop())
 
 	var (
 		walk      = j.walk
@@ -171,7 +179,7 @@ func TestWatchIgnoreNewlyCreatedDir(t *testing.T) {
 	defer os.RemoveAll(testDir)
 	defer os.Remove(".gitignore")
 
-	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
+	j := NewWatchJob(testIfile, scanPath, ModeSyncthing, nil, nil, zap.NewNop())
 
 	var (
 		walk      = j.walk
@@ -250,7 +258,7 @@ func TestWatchFail(t *testing.T) {
 	os.Remove(testTxtfile1)
 	os.Remove(testTxtfile2)
 
-	j := NewWatchJob(testIfile, ModeSyncthing, nil, nil, zap.NewNop())
+	j := NewWatchJob(testIfile, scanPath, ModeSyncthing, nil, nil, zap.NewNop())
 	j.failAfter = 4
 
 	var (
@@ -399,7 +407,7 @@ func TestWatchFailImmediately(t *testing.T) {
 	os.Remove(testIfile)
 
 	runHooks := func() error { return fmt.Errorf("nothing") } // Just so that coverage is triggered.
-	j := NewWatchJob(testIfile, ModeSyncthing, runHooks, runHooks, zap.NewNop())
+	j := NewWatchJob(testIfile, scanPath, ModeSyncthing, runHooks, runHooks, zap.NewNop())
 
 	var (
 		walkCount = 0

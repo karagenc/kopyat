@@ -68,7 +68,7 @@ func (s WatchJobStatus) String() string {
 	}
 }
 
-func NewWatchJob(ifile string, mode Mode, runPreHooks, runPostHooks func() error, log *zap.Logger) *WatchJob {
+func NewWatchJob(ifile, scanPath string, mode Mode, runPreHooks, runPostHooks func() error, log *zap.Logger) *WatchJob {
 	if runPreHooks == nil {
 		runPreHooks = func() error { return nil }
 	}
@@ -83,7 +83,7 @@ func NewWatchJob(ifile string, mode Mode, runPreHooks, runPostHooks func() error
 		status:    atomic.Int32{},
 		stopped:   make(chan struct{}),
 		errs:      make([]error, 0),
-		scanPath:  filepath.Dir(ifile),
+		scanPath:  scanPath,
 		ifile:     ifile,
 		mode:      mode,
 	}

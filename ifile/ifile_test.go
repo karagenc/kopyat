@@ -12,7 +12,7 @@ import (
 )
 
 var testIfile = func(suffix string) string {
-	f, err := filepath.Abs("../test_ifile_" + suffix)
+	f, err := filepath.Abs("test_ifile_" + suffix)
 	if err != nil {
 		panic(err)
 	}

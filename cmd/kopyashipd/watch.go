@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -86,7 +87,7 @@ func (v *svice) initWatchJobsFromConfig() (jobs []*ifile.WatchJob, err error) {
 			return nil, fmt.Errorf("invalid 'for': %s", run.For)
 		}
 
-		j := ifile.NewWatchJob(run.Ifile, mode, runPreHooks, runPostHooks, v.log)
+		j := ifile.NewWatchJob(run.Ifile, filepath.Dir(run.Ifile), mode, runPreHooks, runPostHooks, v.log)
 
 		jobs = append(jobs, j)
 		v.jobsMu.Lock()
