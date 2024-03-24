@@ -17,4 +17,7 @@ test-coverage:
 install:
 	mv kopyaship kopyashipd $(PREFIX)
 
-.PHONY: kopyaship kopyashipd test test-coverage install
+clean:
+	rm -f kopyaship kopyashipd *.exe ifile/test_ifile_* ifile/test_txtfile_*
+
+.PHONY: kopyaship kopyashipd test test-coverage install clean
