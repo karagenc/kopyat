@@ -69,6 +69,8 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 		} else {
 			v.AddConfigPath("$USERPROFILE/kopyaship")
 			v.AddConfigPath("$USERPROFILE/.kopyaship")
+			v.AddConfigPath("$APPDATA/kopyaship")
+			v.AddConfigPath("$LOCALAPPDATA/kopyaship")
 			v.AddConfigPath("$PROGRAMDATA/kopyaship")
 		}
 	}
