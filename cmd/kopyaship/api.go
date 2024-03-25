@@ -64,6 +64,13 @@ func newHTTPClient() (*httpClient, error) {
 
 	if listen == "ipc" {
 		socketAddr := filepath.Join(cacheDir, "api.socket")
+		if _, err := os.Stat(socketAddr); os.IsNotExist(err) {
+			socketAddrSystemWide := filepath.Join(systemWideCacheDir(), "api.socket")
+			if _, err := os.Stat(socketAddrSystemWide); os.IsNotExist(err) {
+				return nil, fmt.Errorf("unix socket file for IPC communication: %s not found in following cache directories: %s and %s", "api.socket", filepath.Dir(socketAddr), filepath.Dir(socketAddrSystemWide))
+			}
+			socketAddr = socketAddrSystemWide
+		}
 		client := &http.Client{
 			Transport: &http.Transport{
 				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {

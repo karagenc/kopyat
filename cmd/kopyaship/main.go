@@ -85,11 +85,7 @@ func initCache(systemWide bool) {
 	cacheDir = os.Getenv("KOPYASHIP_CACHE")
 	if cacheDir == "" {
 		if systemWide {
-			if !utils.RunningOnWindows {
-				cacheDir = "/var/cache/kopyaship"
-			} else {
-				cacheDir = filepath.Join(os.Getenv("PROGRAMDATA"), "kopyaship", "cache")
-			}
+			cacheDir = systemWideCacheDir()
 		} else {
 			cacheDir = filepath.Join(configdir.LocalCache(), "kopyaship")
 		}
@@ -101,6 +97,13 @@ func initCache(systemWide bool) {
 			exit(fmt.Errorf("could not create the cache directory: %v", err), nil)
 		}
 	}
+}
+
+func systemWideCacheDir() string {
+	if !utils.RunningOnWindows {
+		return "/var/cache/kopyaship"
+	}
+	return filepath.Join(os.Getenv("PROGRAMDATA"), "kopyaship", "cache")
 }
 
 func initLogging() {
