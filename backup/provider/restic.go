@@ -73,7 +73,10 @@ func (r *Restic) run(command string) error {
 	}
 	r.logS.Infof("Running: %s", command)
 	if r.password != "" {
-		os.Setenv("RESTIC_PASSWORD", r.password)
+		err := os.Setenv("RESTIC_PASSWORD", r.password)
+		if err != nil {
+			return err
+		}
 		defer os.Unsetenv("RESTIC_PASSWORD")
 	}
 

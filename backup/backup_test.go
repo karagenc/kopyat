@@ -183,7 +183,10 @@ func testRunRestic(repoPath, command, extraArgs string, password string, wr io.W
 
 	fmt.Printf("Running: %s\n", command)
 	if password != "" {
-		os.Setenv("RESTIC_PASSWORD", password)
+		err := os.Setenv("RESTIC_PASSWORD", password)
+		if err != nil {
+			return err
+		}
 		defer os.Unsetenv("RESTIC_PASSWORD")
 	}
 

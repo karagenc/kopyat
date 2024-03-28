@@ -143,7 +143,11 @@ func (b *Backup) Do() error {
 				if err != nil {
 					return err
 				}
-				os.Setenv("RESTIC_PASSWORD", string(password))
+
+				err = os.Setenv("RESTIC_PASSWORD", string(password))
+				if err != nil {
+					return err
+				}
 				defer os.Unsetenv("RESTIC_PASSWORD")
 			}
 		}

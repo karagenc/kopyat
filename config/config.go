@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 	"github.com/tomruk/kopyaship/utils"
 )
@@ -47,6 +48,17 @@ type (
 )
 
 func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, err error) {
+	if utils.RunningOnWindows {
+		home, err := homedir.Dir()
+		if err != nil {
+			return nil, nil, false, err
+		}
+		err = os.Setenv("HOME", home)
+		if err != nil {
+			return nil, nil, false, err
+		}
+	}
+
 	v = viper.New()
 	if configFile != "" {
 		v.SetConfigFile(configFile)
@@ -88,18 +100,17 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 	if err != nil {
 		return
 	}
-	os.Setenv("KOPYASHIP_CONFIG", configFile)
+	err = os.Setenv("KOPYASHIP_CONFIG", configFile)
+	if err != nil {
+		return
+	}
 	if strings.HasPrefix(configFile, "/etc") || (utils.RunningOnWindows && strings.HasPrefix(configFile, os.Getenv("PROGRAMDATA"))) {
 		systemWide = true
 	}
 	return
 }
 
-func (c *Config) PlaceEnvironmentVariables() {
-	if utils.RunningOnWindows {
-		os.Setenv("HOME", os.Getenv("USERPROFILE"))
-	}
-
+func (c *Config) PlaceEnvironmentVariables() error {
 	replace := func(r *string) {
 		*r = os.ExpandEnv(*r)
 		*r = filepath.ToSlash(*r)
@@ -109,7 +120,10 @@ func (c *Config) PlaceEnvironmentVariables() {
 		key = strings.ToUpper(key)
 		c.Env[key] = value
 		replace(&value)
-		os.Setenv(key, value)
+		err := os.Setenv(key, value)
+		if err != nil {
+			return err
+		}
 	}
 
 	replace(&c.Daemon.Log)
@@ -154,6 +168,7 @@ func (c *Config) PlaceEnvironmentVariables() {
 			replace(&c.Backups.Run[i].Paths[j])
 		}
 	}
+	return nil
 }
 
 func (c *Config) Check() error {
