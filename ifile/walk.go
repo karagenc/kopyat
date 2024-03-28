@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 
@@ -14,6 +15,11 @@ import (
 const (
 	gitignore = ".gitignore"
 	csignore  = ".csignore"
+
+	// We need to be fast while walking, and this is faster than
+	// comparing strings every time we need to check whether we're
+	// running on Windows.
+	runningOnWindows = runtime.GOOS == "windows"
 )
 
 func (i *Ifile) Walk(root string) error {
@@ -72,7 +78,7 @@ func (i *Ifile) Walk(root string) error {
 		if i.mode == ModeSyncthing && !anyMatches {
 			return nil
 		} else if i.mode == ModeSyncthing {
-			if utils.RunningOnWindows {
+			if runningOnWindows {
 				path = utils.StripDriveLetter(path)
 			}
 		}

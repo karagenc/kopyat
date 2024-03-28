@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -303,7 +304,7 @@ func TestWatchFail(t *testing.T) {
 	}
 
 	// Trigger walk
-	if utils.RunningOnGitHubActions && utils.RunningOnMacOS {
+	if utils.RunningOnGitHubActions && runtime.GOOS == "darwin" {
 		// Trigger walk manually.
 		// For some reason, fsnotify events are not emitted on macOS GitHub Action runner.
 		for {
@@ -354,7 +355,7 @@ func TestWatchFail(t *testing.T) {
 	time.Sleep(4010 * time.Millisecond)
 
 	// Trigger walk again
-	if utils.RunningOnGitHubActions && utils.RunningOnMacOS {
+	if utils.RunningOnGitHubActions && runtime.GOOS == "windows" {
 		// Trigger walk manually.
 		// For some reason, fsnotify events are not emitted on macOS GitHub Action runner.
 		for {

@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -133,7 +134,7 @@ func TestGitignoreToRestic(t *testing.T) {
 	filesDirs := make(map[string]struct{})
 
 	matchLineWith := basePath
-	if utils.RunningOnWindows && utils.StartsWithDriveLetter(basePath) {
+	if runtime.GOOS == "windows" && utils.StartsWithDriveLetter(basePath) {
 		drive := matchLineWith[0]
 		matchLineWith = matchLineWith[2:]
 		if !strings.HasPrefix(matchLineWith, "/") {

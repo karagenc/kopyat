@@ -4,14 +4,8 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
-)
-
-const (
-	RunningOnWindows = runtime.GOOS == "windows"
-	RunningOnMacOS   = runtime.GOOS == "darwin"
 )
 
 var RunningOnGitHubActions = os.Getenv("GITHUB_ACTIONS") == "true"

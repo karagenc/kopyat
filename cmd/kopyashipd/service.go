@@ -20,7 +20,6 @@ import (
 	"github.com/tomruk/kopyaship/config"
 	_config "github.com/tomruk/kopyaship/config"
 	"github.com/tomruk/kopyaship/ifile"
-	"github.com/tomruk/kopyaship/utils"
 	"go.uber.org/zap"
 )
 

@@ -5,11 +5,11 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
-	"github.com/tomruk/kopyaship/utils"
 )
 
 type (
@@ -48,7 +48,7 @@ type (
 )
 
 func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, err error) {
-	if utils.RunningOnWindows {
+	if runtime.GOOS == "windows" {
 		home, err := homedir.Dir()
 		if err != nil {
 			return nil, nil, false, err
@@ -104,7 +104,7 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 	if err != nil {
 		return
 	}
-	if strings.HasPrefix(configFile, "/etc") || (utils.RunningOnWindows && strings.HasPrefix(configFile, os.Getenv("PROGRAMDATA"))) {
+	if strings.HasPrefix(configFile, "/etc") || (runtime.GOOS == "windows" && strings.HasPrefix(configFile, os.Getenv("PROGRAMDATA"))) {
 		systemWide = true
 	}
 	return
