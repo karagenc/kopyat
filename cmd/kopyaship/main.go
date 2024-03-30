@@ -8,15 +8,16 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/kirsle/configdir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/tomruk/finddirs-go"
 	_config "github.com/tomruk/kopyaship/config"
 	"github.com/tomruk/kopyaship/utils"
 	"go.uber.org/zap"
 )
 
 var (
+	stateDir string
 	cacheDir string
 	config   *_config.Config
 	v        *viper.Viper
@@ -54,23 +55,42 @@ func init() {
 	rootCmd.PersistentFlags().Bool("enable-log", false, "Enable logging to stdout. (For debugging purposes.)")
 
 	cobra.OnInitialize(func() {
-		systemWide := initConfig()
-		initCache(systemWide)
+		userAppDirs, err := finddirs.RetrieveAppDirs(false, &utils.FindDirsConfig)
+		if err != nil {
+			exit(err, nil)
+		}
+		systemAppDirs, err := finddirs.RetrieveAppDirs(true, &utils.FindDirsConfig)
+		if err != nil {
+			exit(err, nil)
+		}
+
+		systemWide := initConfig(userAppDirs.ConfigDir, systemAppDirs.ConfigDir)
+		err = initStateDir(systemWide, userAppDirs.StateDir, systemAppDirs.StateDir)
+		if err != nil {
+			exit(err, nil)
+		}
+		err = initCacheDir(systemWide, userAppDirs.CacheDir, systemAppDirs.CacheDir)
+		if err != nil {
+			exit(err, nil)
+		}
 		initLogging()
-		config.PlaceEnvironmentVariables()
-		err := config.Check()
+		err = config.PlaceEnvironmentVariables()
+		if err != nil {
+			exit(err, nil)
+		}
+		err = config.Check()
 		if err != nil {
 			exit(err, nil)
 		}
 	})
 }
 
-func initConfig() (systemWide bool) {
+func initConfig(userConfigDir, systemConfigDir string) (systemWide bool) {
 	var (
-		configFile, _ = rootCmd.PersistentFlags().GetString("config")
-		err           error
+		configFileArg, _ = rootCmd.PersistentFlags().GetString("config")
+		err              error
 	)
-	config, v, systemWide, err = _config.Read(configFile)
+	config, v, systemWide, err = _config.Read(configFileArg, userConfigDir, systemConfigDir)
 	if err != nil {
 		exit(err, nil)
 	}
@@ -81,29 +101,38 @@ func initConfig() (systemWide bool) {
 	return
 }
 
-func initCache(systemWide bool) {
+func initStateDir(systemWide bool, userStateDir, systemStateDir string) (err error) {
+	stateDir = os.Getenv("KOPYASHIP_STATE_DIR")
+	if stateDir == "" {
+		if systemWide {
+			stateDir = systemStateDir
+		} else {
+			stateDir = userStateDir
+		}
+		err = os.Setenv("KOPYASHIP_STATE_DIR", stateDir)
+		if err != nil {
+			return err
+		}
+	}
+
+	return os.MkdirAll(stateDir, 0755)
+}
+
+func initCacheDir(systemWide bool, userCacheDir, systemCacheDir string) (err error) {
 	cacheDir = os.Getenv("KOPYASHIP_CACHE")
 	if cacheDir == "" {
 		if systemWide {
-			cacheDir = systemWideCacheDir()
+			cacheDir = systemCacheDir
 		} else {
-			cacheDir = filepath.Join(configdir.LocalCache(), "kopyaship")
+			cacheDir = userCacheDir
 		}
-		os.Setenv("KOPYASHIP_CACHE", cacheDir)
-	}
-	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
-		err = os.MkdirAll(cacheDir, 0755)
+		err = os.Setenv("KOPYASHIP_CACHE", cacheDir)
 		if err != nil {
-			exit(fmt.Errorf("could not create the cache directory: %v", err), nil)
+			return err
 		}
 	}
-}
 
-func systemWideCacheDir() string {
-	if !utils.RunningOnWindows {
-		return "/var/cache/kopyaship"
-	}
-	return filepath.Join(os.Getenv("PROGRAMDATA"), "kopyaship", "cache")
+	return os.MkdirAll(cacheDir, 0755)
 }
 
 func initLogging() {

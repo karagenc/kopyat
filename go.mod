@@ -9,13 +9,14 @@ require (
 	github.com/gofrs/flock v0.8.1
 	github.com/jedib0t/go-pretty/v6 v6.5.4
 	github.com/kardianos/service v1.2.2
-	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/mattn/go-shellwords v1.0.12
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
+	github.com/tomruk/finddirs-go v0.1.0
 	github.com/tomruk/go-pathspec v0.1.0
 	github.com/traefik/yaegi v0.16.0
 	go.uber.org/zap v1.21.0

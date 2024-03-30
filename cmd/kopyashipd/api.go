@@ -43,7 +43,7 @@ func (v *svice) newAPIServer() (e *echo.Echo, s *http.Server, listen func() erro
 	v.setupRouter(e)
 
 	if apiConfig.Listen == "ipc" {
-		socketPath := filepath.Join(v.cacheDir, "api.socket")
+		socketPath := filepath.Join(v.stateDir, "api.socket")
 		os.Remove(socketPath)
 		listeningOn := " unix socket: " + socketPath
 

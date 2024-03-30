@@ -13,6 +13,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/tomruk/finddirs-go"
 	"github.com/tomruk/kopyaship/utils"
 )
 
@@ -64,11 +65,16 @@ func newHTTPClient() (*httpClient, error) {
 	}
 
 	if listen == "ipc" {
-		socketAddr := filepath.Join(cacheDir, "api.socket")
+		socketAddr := filepath.Join(stateDir, "api.socket")
 		if _, err := os.Stat(socketAddr); os.IsNotExist(err) {
-			socketAddrSystemWide := filepath.Join(systemWideCacheDir(), "api.socket")
+			dirs, err := finddirs.RetrieveAppDirs(true, &utils.FindDirsConfig)
+			if err != nil {
+				return nil, err
+			}
+			systemWideStateDir := dirs.StateDir
+			socketAddrSystemWide := filepath.Join(systemWideStateDir, "api.socket")
 			if _, err := os.Stat(socketAddrSystemWide); os.IsNotExist(err) {
-				return nil, fmt.Errorf("unix socket file for IPC communication: %s not found in following cache directories: %s and %s", "api.socket", filepath.Dir(socketAddr), filepath.Dir(socketAddrSystemWide))
+				return nil, fmt.Errorf("unix socket file for IPC communication: %s not found in following state directories: %s and %s", "api.socket", filepath.Dir(socketAddr), filepath.Dir(socketAddrSystemWide))
 			}
 			socketAddr = socketAddrSystemWide
 		}

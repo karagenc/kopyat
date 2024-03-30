@@ -47,7 +47,7 @@ type (
 	}
 )
 
-func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, err error) {
+func Read(configFileArg string, userConfigDir, systemConfigDir string) (config *Config, v *viper.Viper, systemWide bool, err error) {
 	if runtime.GOOS == "windows" {
 		home, err := homedir.Dir()
 		if err != nil {
@@ -60,31 +60,20 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 	}
 
 	v = viper.New()
-	if configFile != "" {
-		v.SetConfigFile(configFile)
-	} else if configFile = os.Getenv("KOPYASHIP_CONFIG"); configFile != "" {
+	if configFileArg != "" {
+		v.SetConfigFile(configFileArg)
+	} else if configFile := os.Getenv("KOPYASHIP_CONFIG"); configFile != "" {
 		v.SetConfigFile(configFile)
 	} else {
 		v.SetConfigName("kopyaship")
 		v.SetConfigType("yml")
 		v.AddConfigPath(".")
 
-		if !utils.RunningOnWindows {
-			if os.Getenv("$XDG_CONFIG_HOME") != "" {
-				v.AddConfigPath("$XDG_CONFIG_HOME/kopyaship")
-			} else {
-				v.AddConfigPath("$HOME/.config/kopyaship")
-			}
-			v.AddConfigPath("$HOME/kopyaship")
-			v.AddConfigPath("$HOME/.kopyaship")
-			v.AddConfigPath("/etc")
-		} else {
-			v.AddConfigPath("$USERPROFILE/kopyaship")
-			v.AddConfigPath("$USERPROFILE/.kopyaship")
-			v.AddConfigPath("$APPDATA/kopyaship")
-			v.AddConfigPath("$LOCALAPPDATA/kopyaship")
-			v.AddConfigPath("$PROGRAMDATA/kopyaship")
-		}
+		v.AddConfigPath("$HOME/kopyaship")
+		v.AddConfigPath("$HOME/.kopyaship")
+
+		v.AddConfigPath(userConfigDir)
+		v.AddConfigPath(systemConfigDir)
 	}
 
 	err = v.ReadInConfig()
@@ -96,7 +85,7 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 	if err != nil {
 		return
 	}
-	configFile, err = filepath.Abs(v.ConfigFileUsed())
+	configFile, err := filepath.Abs(v.ConfigFileUsed())
 	if err != nil {
 		return
 	}
@@ -104,7 +93,10 @@ func Read(configFile string) (config *Config, v *viper.Viper, systemWide bool, e
 	if err != nil {
 		return
 	}
-	if strings.HasPrefix(configFile, "/etc") || (runtime.GOOS == "windows" && strings.HasPrefix(configFile, os.Getenv("PROGRAMDATA"))) {
+
+	// If system config directory is used, set systemWide to true
+	// to indicate we're using system-wide directories.
+	if filepath.Dir(configFile) == systemConfigDir {
 		systemWide = true
 	}
 	return

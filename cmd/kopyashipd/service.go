@@ -13,13 +13,14 @@ import (
 
 	"github.com/gofrs/flock"
 	"github.com/kardianos/service"
-	"github.com/kirsle/configdir"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"github.com/tomruk/finddirs-go"
 	"github.com/tomruk/kopyaship/config"
 	_config "github.com/tomruk/kopyaship/config"
 	"github.com/tomruk/kopyaship/ifile"
+	"github.com/tomruk/kopyaship/utils"
 	"go.uber.org/zap"
 )
 
@@ -32,6 +33,7 @@ type svice struct {
 	e *echo.Echo
 	s *http.Server
 
+	stateDir string
 	cacheDir string
 	config   *_config.Config
 	v        *viper.Viper
@@ -54,16 +56,37 @@ func (v *svice) Start(s service.Service) (err error) {
 		pflag.StringP("config", "c", "", "Configuration file")
 		pflag.Parse()
 
-		var systemWide bool
-		systemWide, err = v.initConfig()
+		var (
+			userAppDirs   *finddirs.AppDirs
+			systemAppDirs *finddirs.AppDirs
+			systemWide    bool
+		)
+
+		userAppDirs, err = finddirs.RetrieveAppDirs(false, &utils.FindDirsConfig)
 		if err != nil {
 			return
 		}
-		err = v.initCache(systemWide)
+		systemAppDirs, err = finddirs.RetrieveAppDirs(true, &utils.FindDirsConfig)
 		if err != nil {
 			return
 		}
-		v.config.PlaceEnvironmentVariables()
+
+		systemWide, err = v.initConfig(userAppDirs.ConfigDir, systemAppDirs.ConfigDir)
+		if err != nil {
+			return
+		}
+		err = v.initStateDir(systemWide, userAppDirs.StateDir, systemAppDirs.StateDir)
+		if err != nil {
+			return
+		}
+		err = v.initCacheDir(systemWide, userAppDirs.CacheDir, systemAppDirs.CacheDir)
+		if err != nil {
+			return
+		}
+		err = v.config.PlaceEnvironmentVariables()
+		if err != nil {
+			return
+		}
 		err = v.config.CheckDaemon()
 		if err != nil {
 			return
@@ -117,40 +140,48 @@ func (v *svice) Start(s service.Service) (err error) {
 	return
 }
 
-func (v *svice) initConfig() (systemWide bool, err error) {
-	configFile, _ := pflag.CommandLine.GetString("config")
-	v.config, v.v, systemWide, err = config.Read(configFile)
+func (v *svice) initConfig(userConfigDir, systemConfigDir string) (systemWide bool, err error) {
+	configFileArg, _ := pflag.CommandLine.GetString("config")
+	v.config, v.v, systemWide, err = config.Read(configFileArg, userConfigDir, systemConfigDir)
 	if err != nil {
 		return
 	}
 	err = os.Chdir(filepath.Dir(v.v.ConfigFileUsed()))
-	if err != nil {
-		return
-	}
 	return
 }
 
-func (v *svice) initCache(systemWide bool) error {
+func (v *svice) initStateDir(systemWide bool, userStateDir, systemStateDir string) (err error) {
+	v.stateDir = os.Getenv("KOPYASHIP_STATE_DIR")
+	if v.stateDir == "" {
+		if systemWide {
+			v.stateDir = systemStateDir
+		} else {
+			v.stateDir = userStateDir
+		}
+		err = os.Setenv("KOPYASHIP_STATE_DIR", v.stateDir)
+		if err != nil {
+			return err
+		}
+	}
+
+	return os.MkdirAll(v.stateDir, 0755)
+}
+
+func (v *svice) initCacheDir(systemWide bool, userCacheDir, systemCacheDir string) (err error) {
 	v.cacheDir = os.Getenv("KOPYASHIP_CACHE")
 	if v.cacheDir == "" {
 		if systemWide {
-			if !utils.RunningOnWindows {
-				v.cacheDir = "/var/cache/kopyaship"
-			} else {
-				v.cacheDir = filepath.Join(os.Getenv("PROGRAMDATA"), "kopyaship", "cache")
-			}
+			v.cacheDir = systemCacheDir
 		} else {
-			v.cacheDir = filepath.Join(configdir.LocalCache(), "kopyaship")
+			v.cacheDir = userCacheDir
 		}
-		os.Setenv("KOPYASHIP_CACHE", v.cacheDir)
-	}
-	if _, err := os.Stat(v.cacheDir); os.IsNotExist(err) {
-		err = os.MkdirAll(v.cacheDir, 0755)
+		err = os.Setenv("KOPYASHIP_CACHE", v.cacheDir)
 		if err != nil {
-			return fmt.Errorf("could not create the cache directory: %v", err)
+			return err
 		}
 	}
-	return nil
+
+	return os.MkdirAll(v.cacheDir, 0755)
 }
 
 func (v *svice) initLock() error {
@@ -160,7 +191,7 @@ func (v *svice) initLock() error {
 	}
 	username := user.Username
 	username = strings.ReplaceAll(username, "\\", "_")
-	lockFile := filepath.Join(v.cacheDir, "kopyashipd_"+username+".lock")
+	lockFile := filepath.Join(v.stateDir, "kopyashipd_"+username+".lock")
 	v.lock = flock.New(lockFile)
 
 	go func() {
@@ -186,7 +217,7 @@ func (v *svice) Stop(s service.Service) (err error) {
 	}
 	if v.config != nil && v.e != nil {
 		if v.config.Daemon.API.Listen == "ipc" {
-			socketPath := filepath.Join(v.cacheDir, "api.socket")
+			socketPath := filepath.Join(v.stateDir, "api.socket")
 			defer os.Remove(socketPath)
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)

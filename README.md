@@ -9,4 +9,4 @@ The name kopyaship comes from 2 words: kopya (Turkish for "copy") and ship -> co
 ### Environment variables
 
 - `KOPYASHIP_CONFIG`
-- `KOPYASHIP_CACHE`
+- `KOPYASHIP_STATE_DIR`
