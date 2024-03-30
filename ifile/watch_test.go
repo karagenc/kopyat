@@ -269,11 +269,11 @@ func TestWatchFail(t *testing.T) {
 
 	j.walk = func() error {
 		mu.Lock()
+		currentWalkCount := walkCount
 		walkCount++
-		walkCount := walkCount - 1
 		mu.Unlock()
 
-		if walkCount == 0 {
+		if currentWalkCount == 0 {
 			return nil
 		}
 		return fmt.Errorf("test walk error")
@@ -355,7 +355,7 @@ func TestWatchFail(t *testing.T) {
 	time.Sleep(4010 * time.Millisecond)
 
 	// Trigger walk again
-	if utils.RunningOnGitHubActions && runtime.GOOS == "windows" {
+	if utils.RunningOnGitHubActions && runtime.GOOS == "darwin" {
 		// Trigger walk manually.
 		// For some reason, fsnotify events are not emitted on macOS GitHub Action runner.
 		for {
