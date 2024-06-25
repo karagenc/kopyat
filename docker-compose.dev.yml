@@ -3,6 +3,6 @@ version: '3'
 services:
   dev:
     build:
-      dockerfile: dev.Dockerfile
+      dockerfile: docker/dev.Dockerfile
     volumes:
       - .:/src

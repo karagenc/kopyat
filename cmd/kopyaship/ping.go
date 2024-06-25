@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/tomruk/kopyaship/internal/utils"
 )
 
 var pingCmd = &cobra.Command{
@@ -13,9 +13,10 @@ var pingCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := ping()
 		if err != nil {
-			exit(err, nil)
+			errPrintln(err)
+			exit(exitErrAny)
 		}
-		color.HiGreen("Pong!")
+		utils.Success.Println("Pong!")
 	},
 }
 

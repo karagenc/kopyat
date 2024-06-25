@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/tomruk/kopyaship/backup"
-	"github.com/tomruk/kopyaship/backup/provider"
+	"github.com/tomruk/kopyaship/internal/backup"
+	"github.com/tomruk/kopyaship/internal/backup/provider"
 )
 
 var initCmd = &cobra.Command{
@@ -16,9 +16,10 @@ var initCmd = &cobra.Command{
 
 		ctx, cancel := context.WithCancel(context.Background())
 		addExitHandler(cancel)
-		backups, err := backup.FromConfig(ctx, &config.Backups, cacheDir, log, false, include...)
+		backups, err := backup.FromConfig(ctx, &config.Backups, cacheDir, debugLog, false, include...)
 		if err != nil {
-			exit(err, nil)
+			errPrintln(err)
+			exit(exitErrAny)
 		}
 
 		// If certain backups were choosen:
@@ -27,7 +28,8 @@ var initCmd = &cobra.Command{
 			for _, name := range args {
 				b, ok := backups[name]
 				if !ok {
-					exit(fmt.Errorf("backup with name %s could not be found", name), nil)
+					errPrintln(fmt.Errorf("backup with name %s could not be found", name))
+					exit(exitErrAny)
 				}
 				backups[name] = b
 			}
@@ -36,11 +38,13 @@ var initCmd = &cobra.Command{
 		for _, backup := range backups {
 			restic, ok := backup.Provider.(*provider.Restic)
 			if !ok {
-				exit(fmt.Errorf("backup with name %s is not a restic backup", backup.Name), nil)
+				errPrintln(fmt.Errorf("backup with name %s is not a restic backup", backup.Name))
+				exit(exitErrAny)
 			}
 			err = restic.Init()
 			if err != nil {
-				exit(err, nil)
+				errPrintln(err)
+				exit(exitErrAny)
 			}
 		}
 	},

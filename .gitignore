@@ -1,13 +1,12 @@
 .vscode
 __debug_bin*
-*.exe
 /kopyaship
+/kopyaship.exe
 /kopyaship-*
-/kopyashipd
-/kopyashipd-*
-/kopyashipd.lock
+/kopyaship.lock
 /kopyaship.yml
 /tmp
 test_ifile*
 *.out
 /script-playground
+/internal/statik/statik.go

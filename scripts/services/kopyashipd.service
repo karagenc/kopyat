@@ -1,0 +1,19 @@
+[Unit]
+Description=Kopyaship Service
+After=multi-user.target
+
+[Service]
+Type=Simple
+ExecStart=kopyaship
+Restart=always
+LimitNOFILE=infinity
+User=root
+Group=root
+# Assuming you don't have anything to do with /tmp or /var/tmp, this is set to yes.
+PrivateTmp=yes
+# If your config doesn't include directories /home, /root, and /run/user,
+# you might want to uncomment the option below as a hardening measure.
+#ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

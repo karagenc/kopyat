@@ -2,26 +2,34 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"sync"
 	"syscall"
 
+	gochoice "github.com/TwiN/go-choice"
+	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tomruk/finddirs-go"
-	_config "github.com/tomruk/kopyaship/config"
-	"github.com/tomruk/kopyaship/utils"
+	_config "github.com/tomruk/kopyaship/internal/config"
+	"github.com/tomruk/kopyaship/internal/utils"
 	"go.uber.org/zap"
+
+	_ "github.com/tomruk/kopyaship/internal/statik"
 )
 
 var (
-	stateDir string
-	cacheDir string
-	config   *_config.Config
-	v        *viper.Viper
-	log      *zap.Logger
+	configDir string
+	stateDir  string
+	cacheDir  string
+
+	config *_config.Config
+	v      *viper.Viper
+
+	debugLog *zap.Logger
 
 	rootCmd = &cobra.Command{Use: "kopyaship"}
 )
@@ -29,76 +37,154 @@ var (
 func main() { rootCmd.Execute() }
 
 func init() {
-	sigChan := make(chan os.Signal, 2)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		sig := <-sigChan
-		switch sig {
-		case syscall.SIGINT:
-			fallthrough
-		case syscall.SIGTERM:
-			code := 2
-			exit(nil, &code)
-		}
-	}()
-
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(backupCmd)
 	rootCmd.AddCommand(pingCmd)
-	rootCmd.AddCommand(watchCmd)
+	rootCmd.AddCommand(watchJobCmd)
+	watchJobCmd.AddCommand(watchJobListCmd)
+	watchJobCmd.AddCommand(watchJobStopCmd)
 	rootCmd.AddCommand(doctorCmd)
-	rootCmd.AddCommand(runCmd)
-	watchCmd.AddCommand(watchListCmd)
+	rootCmd.AddCommand(runScript)
+	rootCmd.AddCommand(serviceCmd)
+	serviceCmd.AddCommand(serviceReloadCmd)
+	rootCmd.AddCommand(ifileCmd)
+	ifileCmd.AddCommand(ifileGenerateCmd)
+	ifileGenerateCmd.AddCommand(ifileGenerateSyncthingCmd)
 
-	rootCmd.PersistentFlags().StringP("config", "c", "", "Configuration file")
-	rootCmd.PersistentFlags().Bool("enable-log", false, "Enable logging to stdout. (For debugging purposes.)")
+	rootCmd.PersistentFlags().StringP("config", "c", "", "Config file")
+	rootCmd.PersistentFlags().Bool("enable-log", false, "Enable debug logging to stdout")
 
-	cobra.OnInitialize(func() {
-		userAppDirs, err := finddirs.RetrieveAppDirs(false, &utils.FindDirsConfig)
-		if err != nil {
-			exit(err, nil)
-		}
-		systemAppDirs, err := finddirs.RetrieveAppDirs(true, &utils.FindDirsConfig)
-		if err != nil {
-			exit(err, nil)
+	cobra.OnInitialize(sync.OnceFunc(func() {
+		// If running as service, defer initialization to svc.Start, and
+		// don't handle signals manually, as they will be handled by `kardianos/service`.
+		if willRunAsService() {
+			return
 		}
 
-		systemWide := initConfig(userAppDirs.ConfigDir, systemAppDirs.ConfigDir)
-		err = initStateDir(systemWide, userAppDirs.StateDir, systemAppDirs.StateDir)
+		sigChan := make(chan os.Signal, 2)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+		go func() {
+			sig := <-sigChan
+			switch sig {
+			case syscall.SIGINT:
+				fallthrough
+			case syscall.SIGTERM:
+				exit(exitTerm)
+			}
+		}()
+
+		err := initEverything()
 		if err != nil {
-			exit(err, nil)
+			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+				exists, extractErr := extractConfigInteractive()
+				if !exists {
+					utils.Red.Print("Error: ")
+					fmt.Printf("%v: in addition to that, example config is not found within executable. consider fetching it from https://github.com/tomruk/kopyaship\n", err)
+					exit(exitErrAny)
+				} else if extractErr != nil {
+					errPrintln(extractErr)
+					exit(exitErrAny)
+				}
+				exit(exitSuccess)
+			}
+
+			errPrintln(err)
+			exit(exitErrAny)
 		}
-		err = initCacheDir(systemWide, userAppDirs.CacheDir, systemAppDirs.CacheDir)
+		err = config.CheckNonService()
 		if err != nil {
-			exit(err, nil)
+			errPrintln(err)
+			exit(exitErrAny)
 		}
-		initLogging()
-		err = config.PlaceEnvironmentVariables()
-		if err != nil {
-			exit(err, nil)
-		}
-		err = config.Check()
-		if err != nil {
-			exit(err, nil)
-		}
-	})
+	}))
 }
 
-func initConfig(userConfigDir, systemConfigDir string) (systemWide bool) {
-	var (
-		configFileArg, _ = rootCmd.PersistentFlags().GetString("config")
-		err              error
-	)
+var initEverything = sync.OnceValue(func() error {
+	userAppDirs, err := finddirs.RetrieveAppDirs(false, &utils.FindDirsConfig)
+	if err != nil {
+		return err
+	}
+	systemAppDirs, err := finddirs.RetrieveAppDirs(true, &utils.FindDirsConfig)
+	if err != nil {
+		return err
+	}
+	systemWide, err := initConfig(userAppDirs.ConfigDir, systemAppDirs.ConfigDir)
+	if err != nil {
+		return err
+	}
+	err = initStateDir(systemWide, userAppDirs.StateDir, systemAppDirs.StateDir)
+	if err != nil {
+		return err
+	}
+	err = initCacheDir(systemWide, userAppDirs.CacheDir, systemAppDirs.CacheDir)
+	if err != nil {
+		return err
+	}
+	err = initLogging()
+	if err != nil {
+		return err
+	}
+	return config.PlaceEnvironmentVariables()
+})
+
+func initConfig(userConfigDir, systemConfigDir string) (systemWide bool, err error) {
+	configFileArg, _ := rootCmd.PersistentFlags().GetString("config")
 	config, v, systemWide, err = _config.Read(configFileArg, userConfigDir, systemConfigDir)
 	if err != nil {
-		exit(err, nil)
+		return false, err
 	}
-	err = os.Chdir(filepath.Dir(v.ConfigFileUsed()))
-	if err != nil {
-		exit(err, nil)
-	}
+	configDir = filepath.Dir(v.ConfigFileUsed())
+	err = os.Chdir(configDir)
 	return
+}
+
+func extractConfigInteractive() (exists bool, err error) {
+	statikFS, err := fs.New()
+	if err != nil {
+		return false, err
+	}
+	exampleFile, err := statikFS.Open("/kopyaship_example.yml")
+	if err != nil {
+		return false, err
+	}
+	defer exampleFile.Close()
+	example, err := io.ReadAll(exampleFile)
+	if err != nil {
+		return true, err
+	}
+
+	userAppDirs, err := finddirs.RetrieveAppDirs(false, &utils.FindDirsConfig)
+	if err != nil {
+		return true, err
+	}
+	systemAppDirs, err := finddirs.RetrieveAppDirs(true, &utils.FindDirsConfig)
+	if err != nil {
+		return true, err
+	}
+
+	dirs := _config.DirsLocal()
+	dirs = append(dirs, []string{
+		userAppDirs.ConfigDir,
+		systemAppDirs.ConfigDir,
+	}...)
+	dir, _, err := gochoice.Pick(
+		"Where to store the config file, kopyaship.yml?\nPick:",
+		dirs,
+	)
+	if err != nil {
+		return true, err
+	}
+
+	err = os.MkdirAll(dir, 0755)
+	if err != nil {
+		return true, err
+	}
+	err = os.WriteFile(filepath.Join(dir, "kopyaship.yml"), example, 0644)
+	if err != nil {
+		return true, err
+	}
+	utils.Success.Println("Config written. Make sure you've fully read and edited it before running kopyaship")
+	return true, nil
 }
 
 func initStateDir(systemWide bool, userStateDir, systemStateDir string) (err error) {
@@ -114,7 +200,6 @@ func initStateDir(systemWide bool, userStateDir, systemStateDir string) (err err
 			return err
 		}
 	}
-
 	return os.MkdirAll(stateDir, 0755)
 }
 
@@ -131,20 +216,21 @@ func initCacheDir(systemWide bool, userCacheDir, systemCacheDir string) (err err
 			return err
 		}
 	}
-
 	return os.MkdirAll(cacheDir, 0755)
 }
 
-func initLogging() {
-	enable, _ := rootCmd.PersistentFlags().GetBool("enable-log")
-	if enable {
-		var err error
-		log, err = utils.NewDebugLogger()
-		if err != nil {
-			exit(fmt.Errorf("could not create a new logger: %v", err), nil)
-		}
-	} else {
-		log = zap.NewNop()
+type exitCode int
+
+const (
+	exitSuccess exitCode = iota
+	exitErrAny
+	exitTerm
+	exitServiceFail
+)
+
+func errPrintln(err error) {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s %v\n", utils.Red.Sprint("Error:"), err)
 	}
 }
 
@@ -155,27 +241,19 @@ var (
 
 func addExitHandler(f func()) {
 	exitHandlersMu.Lock()
-	exitHandlers = append(exitHandlers, f)
+	exitHandlers = append(exitHandlers, sync.OnceFunc(f))
 	exitHandlersMu.Unlock()
 }
 
-func exit(err error, code *int) {
+func onExit() {
 	exitHandlersMu.Lock()
 	defer exitHandlersMu.Unlock()
 	for _, f := range exitHandlers {
 		f()
 	}
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", utils.Red.Sprintf("Error: %v", err))
-		if code != nil {
-			os.Exit(*code)
-		} else {
-			os.Exit(1)
-		}
-	}
-	if code != nil {
-		os.Exit(*code)
-	} else {
-		os.Exit(0)
-	}
+}
+
+func exit(code exitCode) {
+	onExit()
+	os.Exit(int(code))
 }

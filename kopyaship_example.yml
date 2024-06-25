@@ -1,0 +1,92 @@
+backups:
+  run:
+    - name: home
+      restic:
+        repo: /var/backup/path/to/restic/repo
+        # If this is set to true, restic command will be prefixed with sudo.
+        # Keep in mind that this is not supported on Windows.
+        sudo: false
+        # Extra arguments for restic. $HOSTNAME is defined in `env` section.
+        extra_args: "-H $HOSTNAME"
+        # Optional password. If you set this, restic will not ask the password of the
+        # repository. Make sure no untrusted party can access this configuration file
+        # before setting this option. You might want to check permissions of this configuration file.
+        # Alternatively, you can set restic password by setting the RESTIC_PASSWORD environment variable.
+        #password:
+
+      # Generate and use ifile.
+      # This is the primary functionality of Kopyaship. If this is set to true,
+      # Kopyaship will read .gitignore and .ksignore files and generate an ifile
+      # from them. Then your backup program will read that ifile and backup files
+      # that are not ignored by .gitignore or .ksignore files. If you disable this,
+      # backups will be done as usual. (Backup program will include all files and
+      # directories specified by `paths`.)
+      use_ifile: true
+
+      # Hooks (scripts or programs) that are going to run before (pre) and after (post) this backup.
+      hooks:
+        pre:
+          - $HOME/scripts/only-if.go Windows
+        post:
+          - '$HOME/scripts/warn-size.go "50 MB"'
+
+      # Reminders that are going to be prompted before (pre) and after (post) this backup.
+      reminders:
+        pre:
+          - This is a reminder that is going to be displayed before this backup.
+        post:
+          - |
+            This is a reminder that is going to be displayed after this backup.
+            In YAML, you can write multiline strings like this.
+
+      # Base directory of this backup. All paths below will be appended (joined) to this.
+      # They will become `/home/glenda/Desktop` and `/home/glenda/Documents`.
+      # You can comment this out if you would not like to use a base directory.
+      base: $HOME
+      paths:
+        - Desktop
+        - Documents
+        - .ssh
+        # Files are allowed too:
+        - .config/user-dirs.dirs
+
+ifile_generation:
+  run:
+    - # Path to .stignore. Its directory and subdirectories will be scanned for files,
+      # .gitignore's, and .ksignore's to generate this ifile.
+      ifile: $PHOTOS_PATH/.stignore
+      # What type of ifile are we generating? (For now, only valid option is `syncthing`).
+      type: syncthing
+      # Hooks (scripts or programs) that are going to run before (pre) and after (post) generation of this ifile.
+      hooks:
+        pre:
+          - $HOME/scripts/notify.go Synchronizing $PHOTOS_PATH
+        post:
+          - $HOME/scripts/notify.go Synchronization of $PHOTOS_PATH is successful
+
+# Environment variables to be set.
+# Their key will be always be uppercase. If you type their key with
+# lowercase characters, their key will be converted to uppercase.
+env:
+  HOSTNAME: StevesComputer
+  PHOTOS_PATH: $HOME/photos
+
+service:
+  # By default, Kopyaship service logs to stdout.
+  # Uncomment this if you would like to log to a file.
+  # Set this to "disabled" to disable logging to both stdout and file.
+  #log: /var/log/kopyaship.log
+
+  api:
+    enabled: true
+    # This can either be `ipc` or `protocol://host:[port]`.
+    # Valid protocols are: http and https
+    listen: ipc
+    # If listening via HTTPS, set cert and key:
+    #cert:
+    #key:
+
+    #basic_auth:
+    #  enabled: true
+    #  username: root
+    #  password: toor
