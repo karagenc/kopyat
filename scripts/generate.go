@@ -27,7 +27,7 @@ outer:
 		}
 	}
 
-	err := extractKopyashipPkg()
+	err := extractKopyatPkg()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -52,19 +52,19 @@ func extractGitHubPkg(gitHubPath string) error {
 	return os.WriteFile("./internal/scripting/symbols/symbols_"+gitHubSuffix+".go", b.Bytes(), 0644)
 }
 
-func extractKopyashipPkg() error {
+func extractKopyatPkg() error {
 	var (
 		ext = extract.Extractor{Dest: "symbols"}
 		b   = bytes.Buffer{}
 	)
 
-	_, err := ext.Extract(".", "github.com/tomruk/kopyaship", &b)
+	_, err := ext.Extract(".", "github.com/karagenc/kopyat", &b)
 	if err != nil {
 		return nil
 	}
 	buf := b.Bytes()
 	buf = bytes.Replace(buf, []byte("	\".\"\n"), nil, 1)
-	return os.WriteFile("./internal/scripting/symbols/symbols_kopyaship.go", buf, 0644)
+	return os.WriteFile("./internal/scripting/symbols/symbols_kopyat.go", buf, 0644)
 }
 
 func gitHubSuffix(path string) string {

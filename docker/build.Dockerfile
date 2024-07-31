@@ -16,6 +16,6 @@ RUN apk --no-cache add \
 	ca-certificates tzdata \
 	&& update-ca-certificates
 
-COPY --from=build /src/kopyaship /usr/local/bin
+COPY --from=build /src/kopyat /usr/local/bin
 
-ENTRYPOINT [ "kopyaship", "service" ]
+ENTRYPOINT [ "kopyat", "service" ]

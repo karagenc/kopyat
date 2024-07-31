@@ -1,8 +1,8 @@
 version: '3'
 
 services:
-  kopyaship:
+  kopyat:
     build:
       dockerfile: docker/build.Dockerfile
     volumes:
-      - ./kopyaship.yml:/etc/kopyaship.yml
+      - ./kopyat.yml:/etc/kopyat.yml

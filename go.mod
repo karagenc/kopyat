@@ -1,4 +1,4 @@
-module github.com/tomruk/kopyaship
+module github.com/karagenc/kopyat
 
 go 1.21
 
@@ -16,8 +16,8 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.9.0
-	github.com/tomruk/finddirs-go v0.1.0
-	github.com/tomruk/go-pathspec v0.1.0
+	github.com/karagenc/finddirs-go v0.1.0
+	github.com/karagenc/go-pathspec v0.1.0
 	github.com/traefik/yaegi v0.16.0
 	go.uber.org/zap v1.21.0
 	golang.org/x/sync v0.1.0

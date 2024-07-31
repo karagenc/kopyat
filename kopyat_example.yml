@@ -15,10 +15,10 @@ backups:
         #password:
 
       # Generate and use ifile.
-      # This is the primary functionality of Kopyaship. If this is set to true,
-      # Kopyaship will read .gitignore and .ksignore files and generate an ifile
+      # This is the primary functionality of Kopyat. If this is set to true,
+      # Kopyat will read .gitignore and .kpignore files and generate an ifile
       # from them. Then your backup program will read that ifile and backup files
-      # that are not ignored by .gitignore or .ksignore files. If you disable this,
+      # that are not ignored by .gitignore or .kpignore files. If you disable this,
       # backups will be done as usual. (Backup program will include all files and
       # directories specified by `paths`.)
       use_ifile: true
@@ -53,7 +53,7 @@ backups:
 ifile_generation:
   run:
     - # Path to .stignore. Its directory and subdirectories will be scanned for files,
-      # .gitignore's, and .ksignore's to generate this ifile.
+      # .gitignore's, and .kpignore's to generate this ifile.
       ifile: $PHOTOS_PATH/.stignore
       # What type of ifile are we generating? (For now, only valid option is `syncthing`).
       type: syncthing
@@ -72,10 +72,10 @@ env:
   PHOTOS_PATH: $HOME/photos
 
 service:
-  # By default, Kopyaship service logs to stdout.
+  # By default, Kopyat service logs to stdout.
   # Uncomment this if you would like to log to a file.
   # Set this to "disabled" to disable logging to both stdout and file.
-  #log: /var/log/kopyaship.log
+  #log: /var/log/kopyat.log
 
   api:
     enabled: true

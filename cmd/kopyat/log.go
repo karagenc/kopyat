@@ -6,7 +6,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/tomruk/kopyaship/internal/utils"
+	"github.com/karagenc/kopyat/internal/utils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

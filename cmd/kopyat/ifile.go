@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/karagenc/kopyat/internal/ifile"
 	"github.com/spf13/cobra"
-	"github.com/tomruk/kopyaship/internal/ifile"
 )
 
 var (

@@ -8,13 +8,13 @@ import (
 	"strings"
 	"syscall"
 
-	pathspec "github.com/tomruk/go-pathspec"
-	"github.com/tomruk/kopyaship/internal/utils"
+	pathspec "github.com/karagenc/go-pathspec"
+	"github.com/karagenc/kopyat/internal/utils"
 )
 
 const (
 	gitignore = ".gitignore"
-	ksignore  = ".ksignore"
+	kpignore  = ".kpignore"
 
 	// We need to be fast while walking, and this is faster than
 	// comparing strings every time we need to check whether we're
@@ -135,7 +135,7 @@ func addIgnoreIfExists(ignorefiles *[]*ignorefile, dir string) error {
 		})
 	}
 
-	path = filepath.Join(dir, ksignore)
+	path = filepath.Join(dir, kpignore)
 	if f, err := os.Stat(path); err == nil && f.Mode().Type().IsRegular() {
 		p, err := pathspec.FromFile(path)
 		if err != nil {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/karagenc/kopyat/internal/scripting"
+	_ctx "github.com/karagenc/kopyat/internal/scripting/ctx"
 	"github.com/spf13/cobra"
-	"github.com/tomruk/kopyaship/internal/scripting"
-	_ctx "github.com/tomruk/kopyaship/internal/scripting/ctx"
 )
 
 var runScript = &cobra.Command{

@@ -33,7 +33,7 @@ func TestSyncthingWalkInCurrentProject(t *testing.T) {
 	for _, line := range strings.Split(string(content), "\n") {
 		require.NotContains(t, line, "README.md")
 		require.NotContains(t, line, "Makefile")
-		require.NotContains(t, line, "cmd/kopyaship")
+		require.NotContains(t, line, "cmd/kopyat")
 		require.NotContains(t, line, "scripts")
 		require.NotContains(t, line, "LICENSE")
 		require.NotRegexp(t, regexp.MustCompile("^/.gitignore$"), line)
@@ -101,7 +101,7 @@ func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
 	found1 := true
 	found2 := true
 	for _, line := range strings.Split(string(content), "\n") {
-		find1 := filepath.Join(path, "cmd/kopyaship/watch.go")
+		find1 := filepath.Join(path, "cmd/kopyat/watch.go")
 		if line == find1 {
 			if found1 {
 				t.Fatalf("this occurs more than once: %s", find1)
@@ -142,7 +142,7 @@ func TestResticWalkInCurrentProject(t *testing.T) {
 
 	for _, line := range strings.Split(string(content), "\n") {
 		require.NotContains(t, line, "tmp")
-		require.NotContains(t, line, "kopyaship.yml")
+		require.NotContains(t, line, "kopyat.yml")
 		require.NotContains(t, line, "test_file")
 	}
 }

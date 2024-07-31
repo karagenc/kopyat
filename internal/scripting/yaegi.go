@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/karagenc/kopyat"
+	"github.com/karagenc/kopyat/internal/scripting/ctx"
+	"github.com/karagenc/kopyat/internal/scripting/symbols"
 	"github.com/mitchellh/go-homedir"
-	"github.com/tomruk/kopyaship"
-	"github.com/tomruk/kopyaship/internal/scripting/ctx"
-	"github.com/tomruk/kopyaship/internal/scripting/symbols"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
 )
@@ -44,7 +44,7 @@ func newYaegiScript(ctx context.Context, sw ...string) (*YaegiScript, error) {
 	}
 
 	symbols := symbols.Clone()
-	symbols["github.com/tomruk/kopyaship/kopyaship"]["GetContext"] = reflect.ValueOf(func() kopyaship.Context {
+	symbols["github.com/karagenc/kopyat/kopyat"]["GetContext"] = reflect.ValueOf(func() kopyat.Context {
 		return s.getContext()
 	})
 	err = i.Use(symbols)

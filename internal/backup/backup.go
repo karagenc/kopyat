@@ -9,9 +9,9 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/term"
 
-	"github.com/tomruk/kopyaship/internal/backup/provider"
-	"github.com/tomruk/kopyaship/internal/config"
-	"github.com/tomruk/kopyaship/internal/utils"
+	"github.com/karagenc/kopyat/internal/backup/provider"
+	"github.com/karagenc/kopyat/internal/config"
+	"github.com/karagenc/kopyat/internal/utils"
 )
 
 type (

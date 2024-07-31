@@ -10,15 +10,15 @@ import (
 	"syscall"
 
 	gochoice "github.com/TwiN/go-choice"
+	"github.com/karagenc/finddirs-go"
+	_config "github.com/karagenc/kopyat/internal/config"
+	"github.com/karagenc/kopyat/internal/utils"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/tomruk/finddirs-go"
-	_config "github.com/tomruk/kopyaship/internal/config"
-	"github.com/tomruk/kopyaship/internal/utils"
 	"go.uber.org/zap"
 
-	_ "github.com/tomruk/kopyaship/internal/statik"
+	_ "github.com/karagenc/kopyat/internal/statik"
 )
 
 var (
@@ -31,7 +31,7 @@ var (
 
 	debugLog *zap.Logger
 
-	rootCmd = &cobra.Command{Use: "kopyaship"}
+	rootCmd = &cobra.Command{Use: "kopyat"}
 )
 
 func main() { rootCmd.Execute() }
@@ -79,7 +79,7 @@ func init() {
 				exists, extractErr := extractConfigInteractive()
 				if !exists {
 					utils.Red.Print("Error: ")
-					fmt.Printf("%v: in addition to that, example config is not found within executable. consider fetching it from https://github.com/tomruk/kopyaship\n", err)
+					fmt.Printf("%v: in addition to that, example config is not found within executable. consider fetching it from https://github.com/karagenc/kopyat\n", err)
 					exit(exitErrAny)
 				} else if extractErr != nil {
 					errPrintln(extractErr)
@@ -143,7 +143,7 @@ func extractConfigInteractive() (exists bool, err error) {
 	if err != nil {
 		return false, err
 	}
-	exampleFile, err := statikFS.Open("/kopyaship_example.yml")
+	exampleFile, err := statikFS.Open("/kopyat_example.yml")
 	if err != nil {
 		return false, err
 	}
@@ -168,7 +168,7 @@ func extractConfigInteractive() (exists bool, err error) {
 		systemAppDirs.ConfigDir,
 	}...)
 	dir, _, err := gochoice.Pick(
-		"Where to store the config file, kopyaship.yml?\nPick:",
+		"Where to store the config file, kopyat.yml?\nPick:",
 		dirs,
 	)
 	if err != nil {
@@ -179,23 +179,23 @@ func extractConfigInteractive() (exists bool, err error) {
 	if err != nil {
 		return true, err
 	}
-	err = os.WriteFile(filepath.Join(dir, "kopyaship.yml"), example, 0644)
+	err = os.WriteFile(filepath.Join(dir, "kopyat.yml"), example, 0644)
 	if err != nil {
 		return true, err
 	}
-	utils.Success.Println("Config written. Make sure you've fully read and edited it before running kopyaship")
+	utils.Success.Println("Config written. Make sure you've fully read and edited it before running kopyat")
 	return true, nil
 }
 
 func initStateDir(systemWide bool, userStateDir, systemStateDir string) (err error) {
-	stateDir = os.Getenv("KOPYASHIP_STATE_DIR")
+	stateDir = os.Getenv("KOPYAT_STATE_DIR")
 	if stateDir == "" {
 		if systemWide {
 			stateDir = systemStateDir
 		} else {
 			stateDir = userStateDir
 		}
-		err = os.Setenv("KOPYASHIP_STATE_DIR", stateDir)
+		err = os.Setenv("KOPYAT_STATE_DIR", stateDir)
 		if err != nil {
 			return err
 		}
@@ -204,14 +204,14 @@ func initStateDir(systemWide bool, userStateDir, systemStateDir string) (err err
 }
 
 func initCacheDir(systemWide bool, userCacheDir, systemCacheDir string) (err error) {
-	cacheDir = os.Getenv("KOPYASHIP_CACHE")
+	cacheDir = os.Getenv("KOPYAT_CACHE")
 	if cacheDir == "" {
 		if systemWide {
 			cacheDir = systemCacheDir
 		} else {
 			cacheDir = userCacheDir
 		}
-		err = os.Setenv("KOPYASHIP_CACHE", cacheDir)
+		err = os.Setenv("KOPYAT_CACHE", cacheDir)
 		if err != nil {
 			return err
 		}

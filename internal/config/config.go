@@ -47,16 +47,16 @@ func DirsLocal() []string {
 		panic(err)
 	}
 	dirs := []string{
-		filepath.Join(home, "kopyaship"),
-		filepath.Join(home, ".kopyaship"),
+		filepath.Join(home, "kopyat"),
+		filepath.Join(home, ".kopyat"),
 	}
 
 	// Avoid duplicate paths. If $XDG_CONFIG_HOME is the same as ~/.config,
-	// userConfigDir will be a duplicate of configHome + "/kopyaship"
+	// userConfigDir will be a duplicate of configHome + "/kopyat"
 	xdgConfigHome := filepath.Clean(os.Getenv("XDG_CONFIG_HOME"))
 	configHome := filepath.Join(home, ".config")
 	if xdgConfigHome != configHome {
-		dirs = append(dirs, filepath.Join(configHome, "kopyaship"))
+		dirs = append(dirs, filepath.Join(configHome, "kopyat"))
 	}
 	return dirs
 }
@@ -81,10 +81,10 @@ func Read(configFile, userConfigDir, systemConfigDir string) (
 	v = viper.New()
 	if configFile != "" {
 		v.SetConfigFile(configFile)
-	} else if configFileEnv := os.Getenv("KOPYASHIP_CONFIG"); configFileEnv != "" {
+	} else if configFileEnv := os.Getenv("KOPYAT_CONFIG"); configFileEnv != "" {
 		v.SetConfigFile(configFileEnv)
 	} else {
-		v.SetConfigName("kopyaship")
+		v.SetConfigName("kopyat")
 		v.SetConfigType("yml")
 
 		v.AddConfigPath(".")
@@ -109,7 +109,7 @@ func Read(configFile, userConfigDir, systemConfigDir string) (
 	if err != nil {
 		return
 	}
-	err = os.Setenv("KOPYASHIP_CONFIG", configFile)
+	err = os.Setenv("KOPYAT_CONFIG", configFile)
 	if err != nil {
 		return
 	}

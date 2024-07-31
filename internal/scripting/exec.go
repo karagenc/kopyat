@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/tomruk/kopyaship/internal/scripting/ctx"
+	"github.com/karagenc/kopyat/internal/scripting/ctx"
 )
 
 type Exec struct {

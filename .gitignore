@@ -1,10 +1,10 @@
 .vscode
 __debug_bin*
-/kopyaship
-/kopyaship.exe
-/kopyaship-*
-/kopyaship.lock
-/kopyaship.yml
+/kopyat
+/kopyat.exe
+/kopyat-*
+/kopyat.lock
+/kopyat.yml
 /tmp
 test_ifile*
 *.out

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/karagenc/kopyat/internal/backup"
+	_ctx "github.com/karagenc/kopyat/internal/scripting/ctx"
+	"github.com/karagenc/kopyat/internal/utils"
 	"github.com/spf13/cobra"
-	"github.com/tomruk/kopyaship/internal/backup"
-	_ctx "github.com/tomruk/kopyaship/internal/scripting/ctx"
-	"github.com/tomruk/kopyaship/internal/utils"
 	"golang.org/x/sync/errgroup"
 )
 

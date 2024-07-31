@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/tomruk/kopyaship/internal/scripting"
-	"github.com/tomruk/kopyaship/internal/scripting/ctx"
+	"github.com/karagenc/kopyat/internal/scripting"
+	"github.com/karagenc/kopyat/internal/scripting/ctx"
 	"golang.org/x/sync/errgroup"
 )
 

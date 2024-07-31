@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/karagenc/kopyat/internal/backup"
+	"github.com/karagenc/kopyat/internal/backup/provider"
 	"github.com/spf13/cobra"
-	"github.com/tomruk/kopyaship/internal/backup"
-	"github.com/tomruk/kopyaship/internal/backup/provider"
 )
 
 var initCmd = &cobra.Command{

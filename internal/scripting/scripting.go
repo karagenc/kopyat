@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/karagenc/kopyat/internal/scripting/ctx"
 	"github.com/mattn/go-shellwords"
-	"github.com/tomruk/kopyaship/internal/scripting/ctx"
 )
 
 type Script interface {

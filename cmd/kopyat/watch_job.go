@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/karagenc/kopyat/internal/ifile"
+	"github.com/karagenc/kopyat/internal/scripting/ctx"
+	"github.com/karagenc/kopyat/internal/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/cobra"
-	"github.com/tomruk/kopyaship/internal/ifile"
-	"github.com/tomruk/kopyaship/internal/scripting/ctx"
-	"github.com/tomruk/kopyaship/internal/utils"
 	"golang.org/x/sync/errgroup"
 )
 

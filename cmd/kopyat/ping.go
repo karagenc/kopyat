@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/karagenc/kopyat/internal/utils"
 	"github.com/spf13/cobra"
-	"github.com/tomruk/kopyaship/internal/utils"
 )
 
 var pingCmd = &cobra.Command{

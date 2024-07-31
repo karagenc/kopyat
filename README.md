@@ -1,6 +1,6 @@
-# kopyaship
+# kopyat
 
-The name kopyaship comes from 2 words: kopya (Turkish for "copy") and ship -> copyship. It is pronounced as copiaship.
+The name kopyat comes from 2 words: kopya (Turkish for "copy") and cat -> copycat.
 
 ## Config
 
@@ -8,9 +8,9 @@ The name kopyaship comes from 2 words: kopya (Turkish for "copy") and ship -> co
 
 ### Environment variables
 
-- `KOPYASHIP_CONFIG`
-- `KOPYASHIP_STATE_DIR`
-- `KOPYASHIP_SCRIPT`
+- `KOPYAT_CONFIG`
+- `KOPYAT_STATE_DIR`
+- `KOPYAT_SCRIPT`
   - Set to `1` only inside Go hooks.
 
 ### Hooks (Scripts)
@@ -19,7 +19,7 @@ The name kopyaship comes from 2 words: kopya (Turkish for "copy") and ship -> co
 package x
 //      ^ package name can be anything, including main.
 
-import "github.com/tomruk/kopyaship"
+import "github.com/karagenc/kopyat"
 
 func init() {
 

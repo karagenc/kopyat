@@ -19,7 +19,7 @@ func init() {
 			return value
 		}
 	)
-	env["KOPYASHIP_SCRIPT"] = "1"
+	env["KOPYAT_SCRIPT"] = "1"
 
 	stdlib.Symbols["os/os"]["Clearenv"] = reflect.ValueOf(func() {
 		mu.Lock()

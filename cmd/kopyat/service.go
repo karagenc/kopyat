@@ -13,11 +13,11 @@ import (
 	"time"
 
 	"github.com/gofrs/flock"
+	"github.com/karagenc/kopyat/internal/ifile"
+	"github.com/karagenc/kopyat/internal/utils"
 	"github.com/kardianos/service"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/cobra"
-	"github.com/tomruk/kopyaship/internal/ifile"
-	"github.com/tomruk/kopyaship/internal/utils"
 	"go.uber.org/zap"
 )
 
@@ -25,8 +25,8 @@ var serviceCmd = &cobra.Command{
 	Use: "service",
 	Run: func(cmd *cobra.Command, args []string) {
 		config := &service.Config{
-			Name:        "kopyaship",
-			DisplayName: "Kopyaship service",
+			Name:        "kopyat",
+			DisplayName: "Kopyat service",
 		}
 
 		svc := &svc{}
@@ -162,14 +162,14 @@ var lockFile = func() string {
 	case "windows":
 		lockDir = os.Getenv("PROGRAMDATA")
 		if lockDir == "" {
-			lockDir = "C:/ProgramData/kopyaship"
+			lockDir = "C:/ProgramData/kopyat"
 		}
 	case "plan9":
-		lockDir = "/lib/kopyaship"
+		lockDir = "/lib/kopyat"
 	default: // unix
 		lockDir = "/var/lock"
 	}
-	return filepath.Join(lockDir, "kopyaship_service.lock")
+	return filepath.Join(lockDir, "kopyat_service.lock")
 }()
 
 func (s *svc) initLock() error {

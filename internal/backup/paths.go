@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tomruk/kopyaship/internal/ifile"
+	"github.com/karagenc/kopyat/internal/ifile"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )

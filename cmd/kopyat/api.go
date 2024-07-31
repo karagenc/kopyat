@@ -14,10 +14,10 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/karagenc/finddirs-go"
+	"github.com/karagenc/kopyat/internal/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/tomruk/finddirs-go"
-	"github.com/tomruk/kopyaship/internal/utils"
 )
 
 const apiSocketFileName = "api.socket"
@@ -53,7 +53,7 @@ func newHTTPClient() (*httpClient, error) {
 	// Unix socket is supported on Windows 10 Insider Build 17063 and later.
 	// For older versions, fall back to HTTP.
 	if listen == "ipc" && runtime.GOOS == "windows" {
-		tempSocketDir, err := os.MkdirTemp("", "kopyaship_*")
+		tempSocketDir, err := os.MkdirTemp("", "kopyat_*")
 		if err != nil {
 			return nil, err
 		}

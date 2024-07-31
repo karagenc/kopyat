@@ -224,10 +224,10 @@ github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsT
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/subosito/gotenv v1.4.2 h1:X1TuBLAMDFbaTAChgCBLu3DU3UPyELpnF2jjJ2cz/S8=
 github.com/subosito/gotenv v1.4.2/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
-github.com/tomruk/finddirs-go v0.1.0 h1:MBM/3GajJsY0g9UcWYElNWQaIS8xqhycP33aPMXOiYA=
-github.com/tomruk/finddirs-go v0.1.0/go.mod h1:laXHQmRm8knPGc9Y0NXkPDauHoc1ZOPiT+k8hf+NBx0=
-github.com/tomruk/go-pathspec v0.1.0 h1:Osl8i46JUwYrmsk0PvpSXzJ5voM4gafW3v6RPqBRbdo=
-github.com/tomruk/go-pathspec v0.1.0/go.mod h1:1LQlcgO0YJwvCrwRCnjVpKfnBwOUg71slccj0ioZEyw=
+github.com/karagenc/finddirs-go v0.1.0 h1:MBM/3GajJsY0g9UcWYElNWQaIS8xqhycP33aPMXOiYA=
+github.com/karagenc/finddirs-go v0.1.0/go.mod h1:laXHQmRm8knPGc9Y0NXkPDauHoc1ZOPiT+k8hf+NBx0=
+github.com/karagenc/go-pathspec v0.1.0 h1:Osl8i46JUwYrmsk0PvpSXzJ5voM4gafW3v6RPqBRbdo=
+github.com/karagenc/go-pathspec v0.1.0/go.mod h1:1LQlcgO0YJwvCrwRCnjVpKfnBwOUg71slccj0ioZEyw=
 github.com/traefik/yaegi v0.16.0 h1:PdG291d+XKZnfgfnc9vedZ9DcIrAq4EYTy3/TyESn20=
 github.com/traefik/yaegi v0.16.0/go.mod h1:4eVhbPb3LnD2VigQjhYbEJ69vDRFdT2HQNrXx8eEwUY=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=

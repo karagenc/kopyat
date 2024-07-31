@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/karagenc/kopyat/internal/utils"
 	"github.com/stretchr/testify/require"
-	"github.com/tomruk/kopyaship/internal/utils"
 	"go.uber.org/zap"
 )
 

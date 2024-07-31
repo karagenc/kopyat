@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/color"
+	"github.com/karagenc/kopyat/internal/utils"
 	"github.com/spf13/cobra"
-	"github.com/tomruk/kopyaship/internal/utils"
 )
 
 var doctorCmd = &cobra.Command{

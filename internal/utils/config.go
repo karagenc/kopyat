@@ -1,9 +1,9 @@
 package utils
 
-import "github.com/tomruk/finddirs-go"
+import "github.com/karagenc/finddirs-go"
 
 var FindDirsConfig = finddirs.AppConfig{
-	Subdir:      "kopyaship",
+	Subdir:      "kopyat",
 	SubdirCache: "cache",
 }
 

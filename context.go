@@ -1,6 +1,6 @@
-package kopyaship
+package kopyat
 
-import "github.com/tomruk/kopyaship/internal/scripting/ctx"
+import "github.com/karagenc/kopyat/internal/scripting/ctx"
 
 type (
 	Context                = ctx.Context

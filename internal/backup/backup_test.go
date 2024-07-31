@@ -12,11 +12,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/karagenc/kopyat/internal/backup/provider"
+	"github.com/karagenc/kopyat/internal/config"
+	"github.com/karagenc/kopyat/internal/utils"
 	"github.com/mattn/go-shellwords"
 	"github.com/stretchr/testify/require"
-	"github.com/tomruk/kopyaship/internal/backup/provider"
-	"github.com/tomruk/kopyaship/internal/config"
-	"github.com/tomruk/kopyaship/internal/utils"
 	"go.uber.org/zap"
 )
 
