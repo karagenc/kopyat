@@ -8,6 +8,8 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gofrs/flock v0.8.1
 	github.com/jedib0t/go-pretty/v6 v6.5.4
+	github.com/karagenc/finddirs-go v0.1.1
+	github.com/karagenc/go-pathspec v0.1.1
 	github.com/kardianos/service v1.2.2
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/mattn/go-shellwords v1.0.12
@@ -16,8 +18,6 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.9.0
-	github.com/karagenc/finddirs-go v0.1.0
-	github.com/karagenc/go-pathspec v0.1.0
 	github.com/traefik/yaegi v0.16.0
 	go.uber.org/zap v1.21.0
 	golang.org/x/sync v0.1.0
@@ -53,7 +53,7 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/net v0.22.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
