@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -31,10 +32,23 @@ outer:
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = extractGitHubPkg("github.com/mitchellh/go-homedir")
+	err = extractGitHubPkgs(
+		"github.com/mitchellh/go-homedir",
+		"github.com/gen2brain/beeep",
+	)
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func extractGitHubPkgs(gitHubPaths ...string) error {
+	for _, gitHubPath := range gitHubPaths {
+		err := extractGitHubPkg(gitHubPath)
+		if err != nil {
+			return fmt.Errorf("extracting %s: %v", gitHubPath, err)
+		}
+	}
+	return nil
 }
 
 func extractGitHubPkg(gitHubPath string) error {
