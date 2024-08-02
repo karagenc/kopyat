@@ -23,9 +23,10 @@ type (
 		bufMu sync.Mutex
 		end   []byte
 
-		filePath string
-		file     *os.File
-		once     sync.Once
+		filePath         string
+		file             *os.File
+		appendToExisting bool
+		once             sync.Once
 	}
 
 	entry struct {
@@ -73,23 +74,21 @@ func New(
 	log *zap.Logger,
 ) (ifile *Ifile, err error) {
 	ifile = &Ifile{
-		log:      log,
-		logS:     log.Sugar(),
-		mode:     mode,
-		filePath: filePath,
+		log:              log,
+		logS:             log.Sugar(),
+		mode:             mode,
+		filePath:         filePath,
+		appendToExisting: appendToExisting,
 	}
 
 	flags := os.O_CREATE | os.O_RDWR
-	if !appendToExisting {
-		flags |= os.O_TRUNC
-	}
 	ifile.file, err = os.OpenFile(ifile.filePath, flags, 0660)
 	if err != nil {
 		return nil, err
 	}
 
-	if appendToExisting {
-		err = ifile.seekToEnd()
+	if ifile.appendToExisting {
+		err = ifile.prepareExisting()
 		if err != nil {
 			return nil, err
 		}
@@ -101,7 +100,7 @@ func New(
 	return
 }
 
-func (i *Ifile) seekToEnd() error {
+func (i *Ifile) prepareExisting() error {
 	content, err := io.ReadAll(i.file)
 	if err != nil {
 		return err
@@ -132,38 +131,14 @@ func (i *Ifile) seekToEnd() error {
 
 	i.logS.Debugf("ifile: %s: begin %d, end %d", i.filePath, begin, end)
 
-	// To apply potential newline seperator change.
-	_, err = i.file.Seek(0, io.SeekStart)
-	if err != nil {
-		return err
-	}
-	err = i.file.Truncate(0)
-	if err != nil {
-		return err
-	}
-	_, err = i.file.Write(content)
-	if err != nil {
-		return err
-	}
-
 	if begin == -1 && end == -1 {
-		_, err := i.file.Seek(0, io.SeekEnd)
-		if err != nil {
-			return err
-		}
+		i.buf.Write(content)
 		i.buf.WriteString(generatedBy + "\n")
 		i.buf.WriteString(beginIndicator + "\n")
 		i.end = append(i.end, []byte(endIndicator+"\n")...)
 	} else {
-		seek := int64(begin + len(beginIndicator) + 1)
-		err = i.file.Truncate(seek)
-		if err != nil {
-			return err
-		}
-		_, err = i.file.Seek(seek, io.SeekStart)
-		if err != nil {
-			return err
-		}
+		i.buf.Write(content[:begin+len(beginIndicator)])
+		i.buf.WriteString("\n")
 		i.end = content[end:]
 	}
 	return nil
@@ -175,6 +150,16 @@ func (i *Ifile) Close() (err error) {
 		err2 error
 	)
 	i.once.Do(func() {
+		if i.appendToExisting {
+			_, err = i.file.Seek(0, io.SeekStart)
+			if err != nil {
+				return
+			}
+			err = i.file.Truncate(0)
+			if err != nil {
+				return
+			}
+		}
 		i.logS.Debugf("ifile: %s: writing i.buf", i.filePath)
 		_, err1 = i.file.Write(i.buf.Bytes())
 		if len(i.end) != 0 {
