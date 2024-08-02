@@ -11,6 +11,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
+	"github.com/traefik/yaegi/stdlib/unrestricted"
 )
 
 type YaegiScript struct {
@@ -39,6 +40,10 @@ func newYaegiScript(ctx context.Context, sw ...string) (*YaegiScript, error) {
 	}
 
 	err = i.Use(stdlib.Symbols)
+	if err != nil {
+		return nil, err
+	}
+	err = i.Use(unrestricted.Symbols)
 	if err != nil {
 		return nil, err
 	}
