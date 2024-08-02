@@ -76,5 +76,10 @@ func (s *YaegiScript) Run(c ctx.Context) (err error) {
 
 	s.getContext = func() ctx.Context { return c }
 	_, err = s.i.ExecuteWithContext(s.ctx, s.prog)
+	if pan, ok := err.(interp.Panic); ok {
+		if exitInfo, ok := pan.Value.(*symbols.ExitInfo); ok {
+			err = fmt.Errorf("script exited with status %d", exitInfo.Code)
+		}
+	}
 	return
 }
