@@ -32,7 +32,7 @@ func TestIfileOverwrite(t *testing.T) {
 	i, err := New(testIfile, ModeSyncthing, false, zap.NewNop())
 	require.NoError(t, err)
 
-	path, err := filepath.Abs("..")
+	path, err := filepath.Abs("../..")
 	require.NoError(t, err)
 	err = i.Walk(path)
 	require.NoError(t, err)
@@ -77,7 +77,7 @@ func TestIfileAppend(t *testing.T) {
 	i, err := New(testIfile, ModeSyncthing, true, zap.NewNop())
 	require.NoError(t, err)
 
-	path, err := filepath.Abs("..")
+	path, err := filepath.Abs("../..")
 	require.NoError(t, err)
 	err = i.Walk(path)
 	require.NoError(t, err)
@@ -132,7 +132,7 @@ func TestIfileAppend2(t *testing.T) {
 	i, err := New(testIfile, ModeSyncthing, true, zap.NewNop())
 	require.NoError(t, err)
 
-	path, err := filepath.Abs("..")
+	path, err := filepath.Abs("../..")
 	require.NoError(t, err)
 	err = i.Walk(path)
 	require.NoError(t, err)

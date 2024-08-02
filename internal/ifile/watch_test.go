@@ -16,7 +16,7 @@ import (
 )
 
 var scanPath = func() string {
-	f, err := filepath.Abs("..")
+	f, err := filepath.Abs("../..")
 	if err != nil {
 		panic(err)
 	}
@@ -79,7 +79,7 @@ func TestWatch(t *testing.T) {
 	}
 
 	for _, line := range strings.Split(string(content), "\n") {
-		entry := "/ifile/" + testTxtfile
+		entry := "/internal/ifile/" + testTxtfile
 		if line == entry {
 			t.Fatalf("this shouldn't have been in ifile: %s", entry)
 		}
@@ -154,7 +154,7 @@ func TestWatchIgnore(t *testing.T) {
 	found := false
 	mu.Lock()
 	for _, line := range strings.Split(string(content), "\n") {
-		entry := "/ifile/" + testTxtfile
+		entry := "/internal/ifile/" + testTxtfile
 		if line == entry {
 			found = true
 		}
@@ -237,7 +237,7 @@ func TestWatchIgnoreNewlyCreatedDir(t *testing.T) {
 	found := false
 	mu.Lock()
 	for _, line := range strings.Split(string(content), "\n") {
-		entry := "/ifile/" + testDir + "/" + testTxtfile
+		entry := "/internal/ifile/" + testDir + "/" + testTxtfile
 		if line == entry {
 			found = true
 		}

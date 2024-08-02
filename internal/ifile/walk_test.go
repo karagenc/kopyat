@@ -19,7 +19,7 @@ func TestSyncthingWalkInCurrentProject(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	path, err := filepath.Abs("..")
+	path, err := filepath.Abs("../..")
 	require.NoError(t, err)
 
 	err = i.Walk(path)
@@ -49,7 +49,7 @@ func TestSyncthingWalkNoRootMatchesInCurrentProject(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	path, err := filepath.Abs("..")
+	path, err := filepath.Abs("../..")
 	require.NoError(t, err)
 
 	err = i.Walk(path)
@@ -77,7 +77,7 @@ func TestSyncthingWalkInCurrentProjectAppend(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	path, err := filepath.Abs("..")
+	path, err := filepath.Abs("../..")
 	require.NoError(t, err)
 
 	err = i.Walk(path)
@@ -129,7 +129,7 @@ func TestResticWalkInCurrentProject(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	path, err := filepath.Abs("..")
+	path, err := filepath.Abs("../..")
 	require.NoError(t, err)
 
 	err = i.Walk(path)
