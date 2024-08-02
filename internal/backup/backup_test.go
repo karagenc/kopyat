@@ -22,8 +22,8 @@ import (
 
 func TestGitignoreToRestic(t *testing.T) {
 	const (
-		basePathRelative = "../tmp"
-		repoPathRelative = "../tmp/documents-repo"
+		basePathRelative = "../../tmp"
+		repoPathRelative = "../../tmp/documents-repo"
 		password         = "1"
 		extraArgs        = "-H test"
 	)
@@ -36,29 +36,29 @@ func TestGitignoreToRestic(t *testing.T) {
 	require.NoError(t, err)
 	repoPath = filepath.ToSlash(repoPath)
 
-	os.RemoveAll("../tmp/documents")
+	os.RemoveAll("../../tmp/documents")
 	os.RemoveAll(repoPath)
 
-	mustCreateDir("../tmp/documents")
-	mustCreateFile("../tmp/documents/1", "")
-	mustCreateDir("../tmp/documents/2")
+	mustCreateDir("../../tmp/documents")
+	mustCreateFile("../../tmp/documents/1", "")
+	mustCreateDir("../../tmp/documents/2")
 
-	mustCreateFile("../tmp/documents/3", "")
-	mustCreateDir("../tmp/documents/4")
-	mustCreateFile("../tmp/documents/4/3", "")
-	mustCreateFile("../tmp/documents/4/1", "")
+	mustCreateFile("../../tmp/documents/3", "")
+	mustCreateDir("../../tmp/documents/4")
+	mustCreateFile("../../tmp/documents/4/3", "")
+	mustCreateFile("../../tmp/documents/4/1", "")
 
-	mustCreateFile("../tmp/documents/5", "")
-	mustCreateFile("../tmp/documents/4/5", "")
+	mustCreateFile("../../tmp/documents/5", "")
+	mustCreateFile("../../tmp/documents/4/5", "")
 
-	mustCreateFile("../tmp/documents/6", "")
-	mustCreateFile("../tmp/documents/4/6", "")
+	mustCreateFile("../../tmp/documents/6", "")
+	mustCreateFile("../../tmp/documents/4/6", "")
 
-	os.WriteFile("../tmp/documents/#7", nil, 0644) // OS might not support this file name. Create optionally — don't check for error.
-	os.WriteFile("../tmp/documents/!8", nil, 0644) // OS might not support this file name. Create optionally — don't check for error.
+	os.WriteFile("../../tmp/documents/#7", nil, 0644) // OS might not support this file name. Create optionally — don't check for error.
+	os.WriteFile("../../tmp/documents/!8", nil, 0644) // OS might not support this file name. Create optionally — don't check for error.
 
 	// https://git-scm.com/docs/gitignore#_pattern_format
-	mustCreateFile("../tmp/documents/.gitignore", `
+	mustCreateFile("../../tmp/documents/.gitignore", `
 #1
 #2
 
