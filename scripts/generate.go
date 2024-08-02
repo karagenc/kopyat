@@ -47,7 +47,7 @@ func extractGitHubPkg(gitHubPath string) error {
 
 	_, err := ext.Extract(pkgIdent, importPath, &b)
 	if err != nil {
-		return nil
+		return err
 	}
 	return os.WriteFile("./internal/scripting/symbols/symbols_"+gitHubSuffix+".go", b.Bytes(), 0644)
 }
@@ -60,7 +60,7 @@ func extractKopyatPkg() error {
 
 	_, err := ext.Extract(".", "github.com/karagenc/kopyat", &b)
 	if err != nil {
-		return nil
+		return err
 	}
 	buf := b.Bytes()
 	buf = bytes.Replace(buf, []byte("	\".\"\n"), nil, 1)
