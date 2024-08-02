@@ -26,7 +26,7 @@ type (
 
 	IfileGenerationRun struct {
 		Ifile string `mapstructure:"ifile"`
-		Type  string `mapstructure:"type"`
+		Mode  string `mapstructure:"mode"`
 		Hooks Hooks  `mapstructure:"hooks"`
 	}
 

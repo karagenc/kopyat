@@ -169,18 +169,18 @@ func (s *svc) initWatchJobs() (jobs []*ifile.WatchJob, err error) {
 			}
 		}
 
-		runPreHooks := newHookRunner(run.Hooks.Pre, ctx.NewIfileGenerationContext(true, run.Ifile, run.Type))
-		runPostHooks := newHookRunner(run.Hooks.Post, ctx.NewIfileGenerationContext(false, run.Ifile, run.Type))
+		runPreHooks := newHookRunner(run.Hooks.Pre, ctx.NewIfileGenerationContext(true, run.Ifile, run.Mode))
+		runPostHooks := newHookRunner(run.Hooks.Post, ctx.NewIfileGenerationContext(false, run.Ifile, run.Mode))
 
 		var mode ifile.Mode
-		switch run.Type {
+		switch run.Mode {
 		case "syncthing":
 			mode = ifile.ModeSyncthing
 		default:
-			if run.Type == "" {
-				return nil, fmt.Errorf("empty `type` field. check config")
+			if run.Mode == "" {
+				return nil, fmt.Errorf("empty `mode` field. check config")
 			}
-			return nil, fmt.Errorf("invalid `type` field: %s", run.Type)
+			return nil, fmt.Errorf("invalid `mode` field: %s", run.Mode)
 		}
 
 		var job *ifile.WatchJob

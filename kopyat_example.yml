@@ -55,8 +55,8 @@ ifile_generation:
     - # Path to .stignore. Its directory and subdirectories will be scanned for files,
       # .gitignore's, and .kpignore's to generate this ifile.
       ifile: $PHOTOS_PATH/.stignore
-      # What type of ifile are we generating? (For now, only valid option is `syncthing`).
-      type: syncthing
+      # What type of ifile are we generating? (For now, only valid option is `syncthing`.)
+      mode: syncthing
       # Hooks (scripts or programs) that are going to run before (pre) and after (post) generation of this ifile.
       hooks:
         pre:
