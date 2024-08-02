@@ -46,7 +46,7 @@ type (
 const (
 	// Include file. Paths are absolute.
 	ModeRestic Mode = iota
-	// Ignore file. Paths are relative to the .gitignore/.kpignore.
+	// Ignore file. Paths are relative to the .gitignore/.kopyatignore.
 	ModeSyncthing
 )
 

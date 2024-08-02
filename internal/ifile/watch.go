@@ -258,7 +258,7 @@ func watch(root string) (watcher *fsnotify.Watcher, eventChan chan string, err e
 				eventChan <- event.Name
 			} else if event.Has(fsnotify.Write) {
 				base := filepath.Base(event.Name)
-				if base == gitignore || base == kpignore {
+				if base == gitignore || base == kopyatignore {
 					eventChan <- event.Name
 				}
 			}

@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	gitignore = ".gitignore"
-	kpignore  = ".kpignore"
+	gitignore    = ".gitignore"
+	kopyatignore = ".kopyatignore"
 
 	// We need to be fast while walking, and this is faster than
 	// comparing strings every time we need to check whether we're
@@ -135,7 +135,7 @@ func addIgnoreIfExists(ignorefiles *[]*ignorefile, dir string) error {
 		})
 	}
 
-	path = filepath.Join(dir, kpignore)
+	path = filepath.Join(dir, kopyatignore)
 	if f, err := os.Stat(path); err == nil && f.Mode().Type().IsRegular() {
 		p, err := pathspec.FromFile(path)
 		if err != nil {
